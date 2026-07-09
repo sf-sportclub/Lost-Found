@@ -712,11 +712,7 @@
                 ? rawDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
                 : item.eventDate;
 
-            let actionBtnRightHTML = `
-                <button onclick="changeStatusAndDisappear(${item.id}, 'สำเร็จ')" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl text-center font-bold transition flex items-center justify-center gap-1.5 text-sm">
-                    <i class="fa-solid fa-check"></i> ${isLost ? 'พบของแล้ว' : 'คืนเจ้าของ'}
-                </button>
-            `;
+           let actionBtnRightHTML = '';
 
             div.innerHTML = `
                 <div>
