@@ -855,12 +855,8 @@
             statusPill.className = "px-3.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200";
             statusPill.innerHTML = `<i class="fa-regular fa-clock mr-1"></i> โพสต์กำลังมีผลในหน้าแรก`;
 
-            const actionBtnBox = document.getElementById('modal-action-buttons');
-            actionBtnBox.innerHTML = `
-                <button onclick="changeStatusAndDisappear(${item.id}, 'สำเร็จ')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition flex items-center gap-1.5 shadow-md shadow-emerald-500/10">
-                    <i class="fa-solid fa-square-check"></i> ${isLost ? 'ทำเครื่องหมายว่าพบแล้ว' : 'ทำเครื่องหมายคืนของแล้ว'}
-                </button>
-            `;
+           const actionBtnBox = document.getElementById('modal-action-buttons');
+actionBtnBox.innerHTML = ``; // ลบโค้ดปุ่มข้างในออกให้หมด เหลือแค่โครงเปล่า ๆ แบบนี้พอครับ
 
             document.getElementById('detail-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
