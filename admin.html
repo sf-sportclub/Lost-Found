@@ -21,7 +21,7 @@
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- ส่วนสำคัญ 🌐: ตั้งค่าเชื่อมโยงหลังบ้าน (ลิงก์ของ Cloudflare Worker v2 ตัวจริงของคุณ) -->
+    <!-- ส่วนสำคัญ 🌐: ตั้งค่าเชื่อมโยงหลังบ้าน (ลิงก์ของ Cloudflare Worker v2 ตัวจริงของคุณเจ) -->
     <script>
         const WORKER_API_URL = "https://sflost0found.jaypichayut.workers.dev";
     </script>
@@ -202,7 +202,7 @@
 
                 <div>
                     <label class="block text-slate-700 font-semibold text-xs mb-1">สถานที่เกิดเหตุ *</label>
-                    <input type="text" id="edit-location" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:border-indigo-500 transition-all">
+                    <input type="text" id="edit-location" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none">
                 </div>
 
                 <div>
@@ -239,7 +239,9 @@
         <p>© 2026 SF Lost & Found. แผงควบคุมระบบสำหรับผู้ดูแลฝ่ายบุคคล (HR Admin Only)</p>
     </footer>
 
+    <!-- ================================================== -->
     <!-- ส่วนตรรกะประมวลผล Javascript (Controller) -->
+    <!-- ================================================== -->
     <script>
         let allPosts = [];
         let filteredPosts = [];
@@ -300,8 +302,8 @@
             fetch(`${WORKER_API_URL}/api/admin/posts`, {
                 method: "GET",
                 headers: { 
-                    "X-Admin-Password": password,
-                    "x-admin-password": password
+                    // ส่ง Key เดี่ยวแบบ Case-Sensitive เพื่อป้องกันปัญหา Comma-Merging ของระบบ Edge HTTP/2
+                    "X-Admin-Password": password
                 }
             })
             .then(async res => {
@@ -319,7 +321,7 @@
             })
             .catch(err => {
                 console.error(err);
-                // แสดงผลป๊อปอัปบอกความจริงก่อนโดนเตะออกจากระบบ
+                // แสดงผลป๊อปอัปบอกความจริงก่อนโดนเตะออกจากระบบ เพื่อสลายบั๊กหลังบ้านได้แม่นยำ
                 Swal.fire({
                     title: "เกิดข้อผิดพลาดในการดึงข้อมูลตาราง",
                     text: err.message + " (กรุณาตรวจสอบว่าคุณเปิดสิทธิ์ตารางใน Supabase หรือคีย์ API ใน Worker ถูกต้องหรือไม่)",
@@ -434,8 +436,7 @@
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-Admin-Password": password,
-                    "x-admin-password": password
+                    "X-Admin-Password": password
                 },
                 body: JSON.stringify({ id: id, status: newStatus })
             })
@@ -474,8 +475,7 @@
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "X-Admin-Password": password,
-                            "x-admin-password": password
+                            "X-Admin-Password": password
                         },
                         body: JSON.stringify({ id: id })
                     })
@@ -545,8 +545,7 @@
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-Admin-Password": password,
-                    "x-admin-password": password
+                    "X-Admin-Password": password
                 },
                 body: JSON.stringify(editPayload)
             })
