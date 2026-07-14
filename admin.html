@@ -39,9 +39,7 @@
                 </div>
                 <h1 class="text-2xl font-bold text-slate-900">ระบบหลังบ้าน HR Admin</h1>
                 <p class="text-slate-400 text-sm mt-1">กรุณากรอกรหัสผ่านลับของฝ่ายบุคคลเพื่อเข้าจัดการข้อมูล</p>
-                <div class="mt-2 bg-indigo-50 text-indigo-700 text-xs px-3 py-1.5 rounded-lg inline-block font-semibold">
-                    <i class="fa-solid fa-key"></i> รหัสมาสเตอร์สำหรับทดสอบ: admin-sf-2026
-                </div>
+                <!-- 🛡️ ปรับปรุงความปลอดภัย: ลบป้ายเฉลยรหัสผ่านสำหรับการทดสอบออกทั้งหมด 100% -->
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -244,8 +242,12 @@
         <p>© 2026 SF Lost & Found. แผงควบคุมระบบสำหรับผู้ดูแลฝ่ายบุคคล (HR Admin Only)</p>
     </footer>
 
-    <!-- ส่วนตรรกะวิเคราะห์ผลลัพธ์ Javascript -->
+    <!-- ส่วนตรรกะประมวลผล Javascript (Controller) -->
     <script>
+        let allPosts = [];
+        let filteredPosts = [];
+
+        // เช็กสิทธิ์ล็อกอินค้างเซสชัน (Session Storage) ทันทีที่โหลดหน้าจอ
         window.onload = function() {
             const storedPass = sessionStorage.getItem("admin_password");
             if (storedPass) {
@@ -255,6 +257,7 @@
             }
         };
 
+        // ยื่นคำร้องตรวจสอบและเข้าสู่ระบบแอดมิน
         function handleLogin(event) {
             event.preventDefault();
             const password = document.getElementById("admin-pass-input").value;
@@ -281,7 +284,7 @@
             })
             .catch(err => {
                 Swal.fire({
-                    title: "ไม่ผ่านสิทธิ์ล็อกอิน",
+                    title: "ไม่ผ่านด่านเช็กสิทธิ์ความปลอดภัย",
                     text: err.message,
                     icon: "error",
                     confirmButtonColor: "#4f46e5"
@@ -289,22 +292,25 @@
             });
         }
 
+        // ออกจากระบบ ล้างความทรงจำบนหน่วยความจำเซสชัน
         function handleLogout() {
             sessionStorage.removeItem("admin_password");
             window.location.reload();
         }
 
+        // ดึงข้อมูลรายการประกาศทั้งหมดในคลังผ่านพาสเวิร์ดแอดมินที่เข้ารหัสผ่าน Header
         function fetchAdminData(password) {
             fetch(`${CLEAN_API_URL}/api/admin/posts`, {
                 method: "GET",
                 headers: { 
+                    // ส่ง Key ล็อกสิทธิ์สูงสุดแบบค้างเซสชันด่านสแกนในหลังบ้าน Worker
                     "X-Admin-Password": password
                 }
             })
             .then(async res => {
                 if (!res.ok) {
                     const errBody = await res.json().catch(() => ({}));
-                    const errMsg = errBody.message || "หมดอายุความปลอดภัยหรือคีย์ไม่ถูกต้อง";
+                    const errMsg = errBody.message || "หมดอายุความปลอดภัยหรือความปลอดภัยล้มเหลว";
                     throw new Error(errMsg);
                 }
                 return res.json();
@@ -316,17 +322,19 @@
             })
             .catch(err => {
                 console.error(err);
+                // แสดงผลป๊อปอัปสลายบั๊กหลังบ้าน เพื่อชี้เป้า Error จริง ๆ จากฐานข้อมูล Supabase
                 Swal.fire({
-                    title: "เกิดข้อผิดพลาดในการเรียกดูตารางข้อมูล",
-                    text: err.message + " (กรุณาเช็กสิทธิ์ SQL หรือคีย์ API ล่าสุดของคุณ)",
+                    title: "เกิดข้อผิดพลาดในการดึงข้อมูลตาราง",
+                    text: err.message + " (กรุณาตรวจสอบว่าคุณเปิดสิทธิ์ตารางใน Supabase หรือคีย์ API ใน Worker ถูกต้องหรือไม่)",
                     icon: "error",
                     confirmButtonColor: "#4f46e5"
                 }).then(() => {
-                    handleLogout();
+                    handleLogout(); // ล้างรหัสผ่านเพื่อความปลอดภัยหากตรวจพบข้อผิดพลาด
                 });
             });
         }
 
+        // สรุปยอดข้อมูลรายงานการติดตามผล
         function renderStats() {
             const total = allPosts.length;
             const active = allPosts.filter(p => p.status === "ใช้งาน").length;
@@ -337,6 +345,7 @@
             document.getElementById("stat-success").innerText = success;
         }
 
+        // กรองสถิติ คัดแยกเงื่อนไข และสั่งเรนเดอร์ตารางแบบเรียลไทม์
         function applyFiltersAndRender() {
             const searchVal = document.getElementById("search-input").value.toLowerCase().trim();
             const statusVal = document.getElementById("filter-status").value;
@@ -418,10 +427,11 @@
             });
         }
 
+        // อัปเดตสถานะประกาศ (ส่งไปแก้ไขช่อง status ในฐานข้อมูล Supabase)
         function updatePostStatus(id, newStatus) {
             const password = sessionStorage.getItem("admin_password");
             
-            showLoading("กำลังแก้ไขและอัปเดตสถานะประกาศ...");
+            showLoading("กำลังอัปเดตสิทธิ์และเปลี่ยนสถานะ...");
 
             fetch(`${CLEAN_API_URL}/api/admin/posts/update-status`, {
                 method: "POST",
@@ -446,6 +456,7 @@
             });
         }
 
+        // ลบประกาศออกจากระบบถาวร (ลบแถวคีย์ในฐานข้อมูลจริง Supabase)
         function deletePostPermanently(id) {
             const password = sessionStorage.getItem("admin_password");
 
@@ -486,6 +497,7 @@
             });
         }
 
+        // เปิดป๊อปอัพหน้าแก้ไขรายละเอียดตัวสะกดคำผิด
         function openEditModal(id) {
             const post = allPosts.find(p => p.id === id);
             if (!post) return;
@@ -504,11 +516,13 @@
             document.body.style.overflow = "hidden";
         }
 
+        // ปิดแบบฟอร์มป๊อปอัพ
         function closeEditModal() {
             document.getElementById("edit-modal").classList.add("hidden");
             document.body.style.overflow = "";
         }
 
+        // ส่งตรรกะแบบฟอร์มการอัปเดตรายละเอียด
         function submitEditForm(event) {
             event.preventDefault();
             const password = sessionStorage.getItem("admin_password");
@@ -552,6 +566,7 @@
             });
         }
 
+        // ตัวช่วยแสดงแจ้งเตือนการเชื่อมต่อเครือข่าย
         function showLoading(msg) {
             Swal.fire({
                 title: msg,
