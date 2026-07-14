@@ -1,578 +1,306 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HR Admin - ระบบจัดการของสูญหาย SF Lost & Found</title>
-    <!-- Tailwind CSS สำหรับระบบ UI ดีไซน์หรูหราทันสมัย -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SweetAlert2 สำหรับป๊อปอัปแจ้งเตือนและยกระดับ UX -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- FontAwesome สำหรับชุดไอคอนกราฟิกตกแต่งตารางและปุ่ม -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+/**
+ * Cloudflare Worker v2: Secure API & Storage Gateway (Super Resilient Edition)
+ * หน้าที่: ประสานงานเชื่อมต่อข้อมูลระหว่างหน้าเว็บหลัก, หน้าเว็บแอดมิน HR และฐานข้อมูล Supabase
+ * คุณสมบัติเด่นของเวอร์ชันนี้:
+ * 1. ป้องกันรหัสผ่านคลาดเคลื่อนด้วยการตรวจเช็กและตัดช่องว่าง (Auto-Trim) 🔑
+ * 2. รองรับด่านตรวจสิทธิ์แอดมิน 3 ช่องทางหลักเพื่อป้องกันเครือข่ายบล็อก Headers 🛡️
+ * 3. แจ้งเตือนข้อผิดพลาดจาก Supabase กลับไปที่หน้าเว็บอย่างชัดเจนเพื่อให้วิเคราะห์บั๊กได้ง่าย
+ */
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
     
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
-        body { 
-            font-family: 'Kanit', sans-serif; 
-            background-color: #f1f5f9; 
+    // 1. ตั้งค่า CORS Headers คุมความปลอดภัยระดับมาตรฐานสากล
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PATCH, DELETE",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Admin-Password, x-admin-password",
+    };
+
+    // ตอบกลับ OPTIONS (Preflight) ของเบราว์เซอร์ทันทีเพื่อเปิดช่องการส่งข้อมูล
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
+    }
+
+    try {
+      if (!env.SUPABASE_URL || !env.SUPABASE_KEY) {
+        throw new Error("ระบบตรวจไม่พบตัวแปรระบบ SUPABASE_URL หรือ SUPABASE_KEY บน Cloudflare Worker Settings");
+      }
+
+      // ดึงรหัสผ่านลับแอดมินจากระบบ พร้อมล้างเว้นวรรคส่วนเกินที่เกิดจากการคัดลอก (Auto-Trim)
+      const ADMIN_PASSWORD = (env.ADMIN_PASSWORD || "sf-admin-1234").trim();
+
+      // ฟังก์ชันสแกนสิทธิ์แอดมินระบบอัจฉริยะ (สแกนตรวจสิทธิ์ 3 ช่องทางยืดหยุ่นสูงสุด)
+      const authorizeAdmin = (req) => {
+        // ช่องทางที่ 1: ตรวจสอบจากหัวจดหมาย X-Admin-Password (รองรับตัวพิมพ์เล็กและใหญ่)
+        const rawHeader = req.headers.get("X-Admin-Password") || req.headers.get("x-admin-password");
+        if (rawHeader) {
+          const clientPassword = rawHeader.split(',')[0].trim();
+          if (clientPassword === ADMIN_PASSWORD) return true;
         }
-    </style>
-</head>
-<body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- ส่วนสำคัญ 🌐: ตั้งค่าเชื่อมโยงหลังบ้าน (ลิงก์ของ Cloudflare Worker v2 ตัวจริงของคุณเจ) -->
-    <script>
-        const WORKER_API_URL = "https://sflost0found.jaypichayut.workers.dev";
-    </script>
+        // ช่องทางที่ 2: ตรวจสอบจากมาตรฐานสิทธิ์การเชื่อมต่อ Authorization Bearer
+        const authHeader = req.headers.get("Authorization");
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+          const token = authHeader.substring(7).trim();
+          if (token === ADMIN_PASSWORD) return true;
+        }
 
-    <!-- ================================================== -->
-    <!-- หน้าจอล็อกอินแอดมิน (Security Login Overlay) -->
-    <!-- ================================================== -->
-    <div id="login-container" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl border border-slate-100">
-            <div class="text-center mb-6">
-                <div class="inline-flex bg-indigo-50 text-indigo-600 p-4 rounded-2xl mb-3 shadow-inner">
-                    <i class="fa-solid fa-user-shield text-3xl"></i>
-                </div>
-                <h1 class="text-2xl font-bold text-slate-900">ระบบหลังบ้าน HR Admin</h1>
-                <p class="text-slate-400 text-sm mt-1">กรุณากรอกรหัสผ่านลับของฝ่ายบุคคลเพื่อเข้าจัดการข้อมูล</p>
-            </div>
-            
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">รหัสผ่านลับแอดมิน (Admin Key)</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
-                            <i class="fa-solid fa-lock"></i>
-                        </span>
-                        <input type="password" id="admin-pass-input" placeholder="••••••••" required class="block w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:border-indigo-500 transition-all text-sm">
-                    </div>
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-600/15 text-sm">
-                    ตรวจสอบสิทธิ์เข้าใช้งาน
-                </button>
-            </form>
-        </div>
-    </div>
+        // ช่องทางที่ 3: ตรวจสอบจากพารามิเตอร์ URL (Query Parameter) เผื่อระบบเครือข่ายบล็อก Headers
+        const urlParamPass = url.searchParams.get("pass");
+        if (urlParamPass && urlParamPass.trim() === ADMIN_PASSWORD) {
+          return true;
+        }
 
-    <!-- ================================================== -->
-    <!-- แผงแดชบอร์ดและตารางจัดการหลัก (Dashboard Panel) -->
-    <!-- ================================================== -->
-    <div id="admin-panel" class="hidden flex-grow flex flex-col">
-        <!-- แถบ Header คุมโดเมน -->
-        <header class="bg-white shadow-sm border-b border-slate-100 sticky top-0 z-30">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16">
-                    <div class="flex items-center space-x-2.5" onclick="window.location.reload();">
-                        <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-md cursor-pointer">
-                            <i class="fa-solid fa-user-gear text-lg"></i>
-                        </div>
-                        <div>
-                            <span class="font-bold text-lg tracking-wide text-slate-900 block leading-tight cursor-pointer">SF Lost & Found</span>
-                            <span class="text-xs text-indigo-600 font-medium block">แผงจัดการข้อมูลของ HR (Admin Panel)</span>
-                        </div>
-                    </div>
-                    <button onclick="handleLogout()" class="bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-1.5 border border-slate-200">
-                        <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
-                    </button>
-                </div>
-            </div>
-        </header>
+        return false;
+      };
 
-        <!-- โซนแดชบอร์ดหลัก -->
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
-            <!-- การ์ดตัวเลขสถิติความก้าวหน้า -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-semibold text-slate-400 uppercase">ประกาศกำลังตามหา</span>
-                        <h3 class="text-3xl font-extrabold text-slate-900 mt-1" id="stat-active">0</h3>
-                    </div>
-                    <div class="bg-rose-50 text-rose-500 p-3.5 rounded-2xl"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-semibold text-slate-400 uppercase">ปิดประวัติสำเร็จ</span>
-                        <h3 class="text-3xl font-extrabold text-slate-900 mt-1" id="stat-success">0</h3>
-                    </div>
-                    <div class="bg-emerald-50 text-emerald-500 p-3.5 rounded-2xl"><i class="fa-solid fa-circle-check text-xl"></i></div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-semibold text-slate-400 uppercase">รวมประวัติทั้งหมด</span>
-                        <h3 class="text-3xl font-extrabold text-slate-900 mt-1" id="stat-total">0</h3>
-                    </div>
-                    <div class="bg-indigo-50 text-indigo-500 p-3.5 rounded-2xl"><i class="fa-solid fa-database text-xl"></i></div>
-                </div>
-            </div>
+      // ==========================================
+      // [หมวดหมู่ที่ 1: สำหรับผู้ใช้ทั่วไป (Public API)]
+      // ==========================================
 
-            <!-- กล่องกรองตั้งค่า ค้นหาสดแบบ Real-time -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-3 items-center justify-between">
-                <div class="relative w-full md:max-w-md">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </span>
-                    <input type="text" id="search-input" oninput="applyFiltersAndRender()" placeholder="ค้นหาตามชื่อสิ่งของ, สถานที่ หรือชื่อผู้แจ้ง..." class="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:border-indigo-500 transition-all">
-                </div>
+      // 1.1 ดึงรายการประกาศสถานะทั้งหมดเพื่อส่งกลับไปแสดงผล
+      if (request.method === "GET" && url.pathname === "/api/posts") {
+        const supabaseTarget = `${env.SUPABASE_URL}/rest/v1/posts?order=id.desc`;
+        const response = await fetch(supabaseTarget, {
+          method: "GET",
+          headers: {
+            "apikey": env.SUPABASE_KEY,
+            "Authorization": `Bearer ${env.SUPABASE_KEY}`,
+            "Content-Type": "application/json"
+          }
+        });
 
-                <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                    <select id="filter-status" onchange="applyFiltersAndRender()" class="bg-slate-50 border border-slate-200 text-slate-700 py-2.5 px-4 rounded-xl text-xs font-medium focus:outline-none transition-all">
-                        <option value="">สถานะ: ทั้งหมด</option>
-                        <option value="ใช้งาน">ใช้งาน (กำลังตามหา/รอเจ้าของ)</option>
-                        <option value="สำเร็จ">สำเร็จ (ส่งมอบคืนแล้ว)</option>
-                    </select>
-                    <select id="filter-type" onchange="applyFiltersAndRender()" class="bg-slate-50 border border-slate-200 text-slate-700 py-2.5 px-4 rounded-xl text-xs font-medium focus:outline-none transition-all">
-                        <option value="">ประเภท: ทั้งหมด</option>
-                        <option value="ประกาศของหาย">ประกาศของหาย</option>
-                        <option value="ประกาศหาเจ้าของ">ประกาศหาเจ้าของ</option>
-                    </select>
-                </div>
-            </div>
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Supabase Error: ${response.status} - ${errText}`);
+        }
 
-            <!-- ตารางแสดงรายการข้อมูล (Data Table) -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 text-xs font-bold uppercase tracking-wider">
-                                <th class="px-6 py-4">รูปภาพ</th>
-                                <th class="px-6 py-4">ชื่อสิ่งของ</th>
-                                <th class="px-6 py-4">ประเภท/หมวดหมู่</th>
-                                <th class="px-6 py-4">สถานที่/วันเวลาเกิดเหตุ</th>
-                                <th class="px-6 py-4">ผู้ประกาศ/ติดต่อ</th>
-                                <th class="px-6 py-4">สถานะ</th>
-                                <th class="px-6 py-4 text-right">การจัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
-                            <!-- แถวข้อมูลถูกกรอกแบบไดนามิกผ่าน Javascript -->
-                        </tbody>
-                    </table>
-                </div>
+        const data = await response.json();
+        return new Response(JSON.stringify(data), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
 
-                <!-- แสดงผลเมื่อไม่พบประวัติใดๆ -->
-                <div id="no-data-state" class="hidden text-center py-16 bg-slate-50">
-                    <i class="fa-solid fa-folder-open text-4xl text-slate-300"></i>
-                    <h3 class="font-bold text-slate-700 mt-2">ไม่พบรายการข้อมูล</h3>
-                    <p class="text-xs text-slate-400 mt-1">ไม่มีข้อมูลที่ตรงกับคำค้นหาหรือตัวกรองในขณะนี้</p>
-                </div>
-            </div>
-        </main>
-    </div>
+      // 1.2 รับข้อมูลส่งฟอร์มประกาศใหม่ พร้อมอัปโหลดภาพเข้า Supabase Storage
+      if (request.method === "POST" && url.pathname === "/api/posts") {
+        const payload = await request.json();
+        const timestamp = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
+        const imageUrls = [];
 
-    <!-- ================================================== -->
-    <!-- ป๊อปอัพฟอร์มแก้ไขรายละเอียดประกาศ (Edit Modal) -->
-    <!-- ================================================== -->
-    <div id="edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                <h2 class="font-bold text-slate-900 text-base flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square text-indigo-600"></i> แก้ไขข้อมูลประกาศใน Supabase
-                </h2>
-                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-200 p-2 rounded-full transition-colors">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            
-            <form onsubmit="submitEditForm(event)" class="overflow-y-auto p-6 space-y-4">
-                <input type="hidden" id="edit-id">
-                
-                <div>
-                    <label class="block text-slate-700 font-semibold text-xs mb-1">ชื่อสิ่งของ *</label>
-                    <input type="text" id="edit-itemName" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:border-indigo-500 transition-all">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-slate-700 font-semibold text-xs mb-1">หมวดหมู่ *</label>
-                        <select id="edit-category" required class="w-full bg-slate-50 border border-slate-200 text-slate-700 py-2 px-3 rounded-xl text-xs focus:outline-none transition-all">
-                            <option value="📱 โทรศัพท์มือถือ">📱 โทรศัพท์มือถือ</option>
-                            <option value="👜 กระเป๋า">👜 กระเป๋า/กระเป๋าสตางค์</option>
-                            <option value="🔑 กุญแจ">🔑 กุญแจ</option>
-                            <option value="🪪 บัตร/เอกสาร">🪪 บัตร/เอกสาร</option>
-                            <option value="📦 อื่นๆ">📦 อื่นๆ</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-slate-700 font-semibold text-xs mb-1">วันที่เกิดเหตุ *</label>
-                        <input type="date" id="edit-eventDate" required class="w-full bg-slate-50 border border-slate-200 text-slate-700 py-1.5 px-3 rounded-xl text-xs focus:outline-none transition-all">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-slate-700 font-semibold text-xs mb-1">สถานที่เกิดเหตุ *</label>
-                    <input type="text" id="edit-location" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-slate-700 font-semibold text-xs mb-1">รายละเอียดลักษณะพิเศษ (เพิ่มเติม)</label>
-                    <textarea id="edit-details" rows="3" class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none resize-none"></textarea>
-                </div>
-
-                <div class="border-t border-slate-100 pt-3 grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-slate-700 font-semibold text-xs mb-1">ชื่อผู้แจ้งติดต่อ *</label>
-                        <input type="text" id="edit-contactName" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-slate-700 font-semibold text-xs mb-1">เบอร์โทรศัพท์ติดต่อกลับ *</label>
-                        <input type="tel" id="edit-phone" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-slate-700 font-semibold text-xs mb-1">LINE ID</label>
-                    <input type="text" id="edit-lineId" class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none">
-                </div>
-
-                <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
-                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition">ยกเลิก</button>
-                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition">บันทึกข้อมูลแก้ไข</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Footer ล่างสุด -->
-    <footer class="bg-white border-t border-slate-100 py-6 text-center text-xs text-slate-400 mt-auto">
-        <p>© 2026 SF Lost & Found. แผงควบคุมระบบสำหรับผู้ดูแลฝ่ายบุคคล (HR Admin Only)</p>
-    </footer>
-
-    <!-- ================================================== -->
-    <!-- ส่วนตรรกะประมวลผล Javascript (Controller) -->
-    <!-- ================================================== -->
-    <script>
-        let allPosts = [];
-        let filteredPosts = [];
-
-        // เช็กสิทธิ์ล็อกอินค้างเซสชัน (Session Storage) ทันทีที่โหลดหน้าจอ
-        window.onload = function() {
-            const storedPass = sessionStorage.getItem("admin_password");
-            if (storedPass) {
-                document.getElementById("login-container").classList.add("hidden");
-                document.getElementById("admin-panel").classList.remove("hidden");
-                fetchAdminData(storedPass);
+        if (payload.images && payload.images.length > 0) {
+          for (let i = 0; i < payload.images.length; i++) {
+            const img = payload.images[i];
+            const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${img.filename}`;
+            const binaryString = atob(img.base64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let j = 0; j < binaryString.length; j++) {
+              bytes[j] = binaryString.charCodeAt(j);
             }
-        };
 
-        // ยื่นคำร้องตรวจสอบและเข้าสู่ระบบแอดมิน
-        function handleLogin(event) {
-            event.preventDefault();
-            const password = document.getElementById("admin-pass-input").value;
-            
-            showLoading("กำลังวิเคราะห์สิทธิ์แอดมิน...");
-
-            fetch(`${WORKER_API_URL}/api/admin/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ password: password })
-            })
-            .then(res => {
-                if (!res.ok) throw new Error("รหัสผ่านลับแอดมินไม่ถูกต้อง");
-                return res.json();
-            })
-            .then(data => {
-                if (data.status === "success") {
-                    sessionStorage.setItem("admin_password", password);
-                    document.getElementById("login-container").classList.add("hidden");
-                    document.getElementById("admin-panel").classList.remove("hidden");
-                    Swal.close();
-                    fetchAdminData(password);
-                }
-            })
-            .catch(err => {
-                Swal.fire({
-                    title: "ไม่ได้รับสิทธิ์เข้าดำเนินการ",
-                    text: err.message,
-                    icon: "error",
-                    confirmButtonColor: "#4f46e5"
-                });
-            });
-        }
-
-        // ออกจากระบบ ล้างความทรงจำบนหน่วยความจำเซสชัน
-        function handleLogout() {
-            sessionStorage.removeItem("admin_password");
-            window.location.reload();
-        }
-
-        // ดึงข้อมูลรายการประกาศทั้งหมดในคลังผ่านพาสเวิร์ดแอดมินที่เข้ารหัสผ่าน Header
-        function fetchAdminData(password) {
-            fetch(`${WORKER_API_URL}/api/admin/posts`, {
-                method: "GET",
-                headers: { 
-                    // ส่ง Key เดี่ยวแบบ Case-Sensitive เพื่อป้องกันปัญหา Comma-Merging ของระบบ Edge HTTP/2
-                    "X-Admin-Password": password
-                }
-            })
-            .then(async res => {
-                if (!res.ok) {
-                    const errBody = await res.json().catch(() => ({}));
-                    const errMsg = errBody.message || "หมดอายุความปลอดภัยหรือความปลอดภัยล้มเหลว";
-                    throw new Error(errMsg);
-                }
-                return res.json();
-            })
-            .then(data => {
-                allPosts = data;
-                renderStats();
-                applyFiltersAndRender();
-            })
-            .catch(err => {
-                console.error(err);
-                // แสดงผลป๊อปอัปบอกความจริงก่อนโดนเตะออกจากระบบ เพื่อสลายบั๊กหลังบ้านได้แม่นยำ
-                Swal.fire({
-                    title: "เกิดข้อผิดพลาดในการดึงข้อมูลตาราง",
-                    text: err.message + " (กรุณาตรวจสอบว่าคุณเปิดสิทธิ์ตารางใน Supabase หรือคีย์ API ใน Worker ถูกต้องหรือไม่)",
-                    icon: "error",
-                    confirmButtonColor: "#4f46e5"
-                }).then(() => {
-                    handleLogout(); // ล้างรหัสผ่านและรีเซ็ตหน้าจอหลังจากกดยอมรับป๊อปอัปสีแดง
-                });
-            });
-        }
-
-        // สรุปยอดข้อมูลรายงานการติดตามผล
-        function renderStats() {
-            const total = allPosts.length;
-            const active = allPosts.filter(p => p.status === "ใช้งาน").length;
-            const success = allPosts.filter(p => p.status === "สำเร็จ").length;
-
-            document.getElementById("stat-total").innerText = total;
-            document.getElementById("stat-active").innerText = active;
-            document.getElementById("stat-success").innerText = success;
-        }
-
-        // กรองสถิติ คัดแยกเงื่อนไข และสั่งเรนเดอร์ตารางแบบเรียลไทม์
-        function applyFiltersAndRender() {
-            const searchVal = document.getElementById("search-input").value.toLowerCase().trim();
-            const statusVal = document.getElementById("filter-status").value;
-            const typeVal = document.getElementById("filter-type").value;
-
-            filteredPosts = allPosts.filter(item => {
-                if (statusVal && item.status !== statusVal) return false;
-                if (typeVal && item.type !== typeVal) return false;
-
-                if (searchVal) {
-                    const matchName = item.itemName.toLowerCase().includes(searchVal);
-                    const matchLoc = item.location.toLowerCase().includes(searchVal);
-                    const matchContact = item.contactName.toLowerCase().includes(searchVal);
-                    const matchDetails = (item.details || '').toLowerCase().includes(searchVal);
-                    if (!matchName && !matchLoc && !matchContact && !matchDetails) return false;
-                }
-                return true;
+            const uploadUrl = `${env.SUPABASE_URL}/storage/v1/object/sf-lostfound-images/${uniqueFilename}`;
+            const uploadResponse = await fetch(uploadUrl, {
+              method: "POST",
+              headers: {
+                "apikey": env.SUPABASE_KEY,
+                "Authorization": `Bearer ${env.SUPABASE_KEY}`,
+                "Content-Type": img.mimeType,
+                "x-upsert": "true"
+              },
+              body: bytes.buffer
             });
 
-            const tbody = document.getElementById("table-body");
-            const emptyState = document.getElementById("no-data-state");
-            tbody.innerHTML = "";
-
-            if (filteredPosts.length === 0) {
-                emptyState.classList.remove("hidden");
-                return;
+            if (uploadResponse.ok) {
+              const publicUrl = `${env.SUPABASE_URL}/storage/v1/object/public/sf-lostfound-images/${uniqueFilename}`;
+              imageUrls.push(publicUrl);
+            } else {
+              const errText = await uploadResponse.text();
+              throw new Error(`Failed to upload image to Supabase: ${errText}`);
             }
-            emptyState.classList.add("hidden");
-
-            filteredPosts.forEach(post => {
-                const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-50/80 transition duration-150 border-b border-slate-100";
-                
-                let imagesArr = post.images ? post.images.split(",") : [];
-                let imgHTML = `<div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400"><i class="fa-regular fa-image"></i></div>`;
-                if (imagesArr.length > 0 && imagesArr[0] !== "") {
-                    imgHTML = `<img src="${imagesArr[0]}" class="w-10 h-10 object-cover rounded-lg border shadow-sm cursor-pointer" onclick="window.open('${imagesArr[0]}', '_blank')">`;
-                }
-
-                const isLost = post.type === "ประกาศของหาย";
-                const typeLabel = isLost 
-                    ? `<span class="bg-rose-50 text-rose-500 border border-rose-100 px-2 py-0.5 rounded-md text-[11px] font-bold">ประกาศของหาย</span>`
-                    : `<span class="bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-0.5 rounded-md text-[11px] font-bold">ประกาศหาเจ้าของ</span>`;
-
-                const statusLabel = post.status === "ใช้งาน"
-                    ? `<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-600 border border-amber-100 px-2.5 py-0.5 rounded-full text-xs font-semibold"><span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span> ใช้งานอยู่</span>`
-                    : `<span class="inline-flex items-center gap-1 bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-0.5 rounded-full text-xs font-semibold"><span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span> ปิดสำเร็จ</span>`;
-
-                const actionToggleBtn = post.status === "ใช้งาน"
-                    ? `<button onclick="updatePostStatus(${post.id}, 'สำเร็จ')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"><i class="fa-solid fa-check"></i> เสร็จสิ้น</button>`
-                    : `<button onclick="updatePostStatus(${post.id}, 'ใช้งาน')" class="bg-amber-50 hover:bg-amber-100 text-amber-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"><i class="fa-solid fa-arrows-rotate"></i> กู้คืน</button>`;
-
-                tr.innerHTML = `
-                    <td class="px-6 py-4">${imgHTML}</td>
-                    <td class="px-6 py-4 font-bold text-slate-900">${post.itemName}</td>
-                    <td class="px-6 py-4 space-y-1">
-                        <div>${typeLabel}</div>
-                        <div class="text-[11px] text-slate-400 font-semibold">${post.category}</div>
-                    </td>
-                    <td class="px-6 py-4 text-xs text-slate-500 space-y-0.5">
-                        <div class="font-bold text-slate-700"><i class="fa-solid fa-map-pin text-rose-500"></i> ${post.location}</div>
-                        <div><i class="fa-regular fa-calendar text-slate-400"></i> ${post.eventDate}</div>
-                    </td>
-                    <td class="px-6 py-4 text-xs text-slate-500 space-y-0.5">
-                        <div class="font-bold text-slate-700">${post.contactName}</div>
-                        <div>โทร: ${post.phone}</div>
-                        ${post.lineId && post.lineId !== '-' ? `<div>LINE: ${post.lineId}</div>` : ''}
-                    </td>
-                    <td class="px-6 py-4">${statusLabel}</td>
-                    <td class="px-6 py-4 text-right">
-                        <div class="flex items-center justify-end gap-1.5">
-                            ${actionToggleBtn}
-                            <button onclick="openEditModal(${post.id})" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"><i class="fa-regular fa-edit"></i> แก้ไข</button>
-                            <button onclick="deletePostPermanently(${post.id})" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"><i class="fa-regular fa-trash-can"></i> ลบ</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+          }
         }
 
-        // อัปเดตสถานะประกาศ (ส่งไปแก้ไขช่อง status ในฐานข้อมูล Supabase)
-        function updatePostStatus(id, newStatus) {
-            const password = sessionStorage.getItem("admin_password");
-            
-            showLoading("กำลังอัปเดตสิทธิ์และเปลี่ยนสถานะ...");
+        const imagesString = imageUrls.join(',');
 
-            fetch(`${WORKER_API_URL}/api/admin/posts/update-status`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Admin-Password": password
-                },
-                body: JSON.stringify({ id: id, status: newStatus })
-            })
-            .then(res => {
-                if (!res.ok) throw new Error("ไม่ผ่านด่านเช็กสิทธิ์ความปลอดภัยแอดมิน");
-                return res.json();
-            })
-            .then(data => {
-                if (data.status === "success") {
-                    Swal.fire({ title: "ดำเนินการสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false });
-                    fetchAdminData(password);
-                }
-            })
-            .catch(err => {
-                Swal.fire("ข้อผิดพลาด!", err.message, "error");
-            });
+        const dbTarget = `${env.SUPABASE_URL}/rest/v1/posts`;
+        const insertResponse = await fetch(dbTarget, {
+          method: "POST",
+          headers: {
+            "apikey": env.SUPABASE_KEY,
+            "Authorization": `Bearer ${env.SUPABASE_KEY}`,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify({
+            timestamp: timestamp,
+            type: payload.type,
+            itemName: payload.itemName,
+            category: payload.category,
+            eventDate: payload.eventDate,
+            location: payload.location,
+            details: payload.details || "",
+            contactName: payload.contactName,
+            phone: payload.phone,
+            lineId: payload.lineId || "-",
+            images: imagesString,
+            status: "ใช้งาน"
+          })
+        });
+
+        if (!insertResponse.ok) {
+          const errText = await insertResponse.text();
+          throw new Error(`Failed to insert record: ${errText}`);
         }
 
-        // ลบประกาศออกจากระบบถาวร (ลบแถวคีย์ในฐานข้อมูลจริง Supabase)
-        function deletePostPermanently(id) {
-            const password = sessionStorage.getItem("admin_password");
+        return new Response(JSON.stringify({ status: "success", message: "บันทึกข้อมูลและรูปภาพสำเร็จ" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
 
-            Swal.fire({
-                title: "ยืนยันต้องการลบโพสต์ถาวร?",
-                text: "ประวัติของชิ้นนี้จะถูกลบออกจากตาราง Supabase ตลอดกาล และไม่สามารถย้อนหรือกู้คืนกลับมาได้อีก!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#ef4444",
-                cancelButtonColor: "#64748b",
-                confirmButtonText: "ใช่, สั่งลบถาวร!",
-                cancelButtonText: "ยกเลิก"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    showLoading("กำลังลบแถวประวัติในตาราง...");
-                    fetch(`${WORKER_API_URL}/api/admin/posts/delete`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-Admin-Password": password
-                        },
-                        body: JSON.stringify({ id: id })
-                    })
-                    .then(res => {
-                        if (!res.ok) throw new Error("ไม่ได้รับอนุญาตให้ส่งคำสั่งลบข้อมูล");
-                        return res.json();
-                    })
-                    .then(data => {
-                        if (data.status === "success") {
-                            Swal.fire("เรียบร้อย!", "ลบข้อมูลออกจากฐานข้อมูลแล้ว", "success");
-                            fetchAdminData(password);
-                        }
-                    })
-                    .catch(err => {
-                        Swal.fire("สั่งลบล้มเหลว!", err.message, "error");
-                    });
-                }
-            });
+      // =======================================
+      // [หมวดหมู่ที่ 2: สำหรับผู้ดูแลระบบ HR (Admin API)]
+      // =======================================
+
+      // 2.1 ตรวจสอบคำร้องรหัสล็อกอินของฝ่ายบุคคล
+      if (request.method === "POST" && url.pathname === "/api/admin/login") {
+        const payload = await request.json();
+        const clientPassword = (payload.password || "").trim();
+
+        if (clientPassword === ADMIN_PASSWORD) {
+          return new Response(JSON.stringify({ status: "success", message: "ตรวจสอบรหัสผ่านถูกต้อง" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        } else {
+          return new Response(JSON.stringify({ status: "error", message: "รหัสผ่านผู้ดูแลระบบไม่ถูกต้อง" }), {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        }
+      }
+
+      // ด่านสแกนเช็กสิทธิ์ความปลอดภัยแอดมินก่อนเข้าถึง API จัดการตารางข้อมูลด้านล่าง
+      if (url.pathname.startsWith("/api/admin/")) {
+        if (!authorizeAdmin(request)) {
+          return new Response(JSON.stringify({ status: "error", message: "สิทธิ์แอดมินไม่ถูกต้องหรือเซสชันหมดอายุ" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        }
+      }
+
+      // 2.2 ดึงข้อมูลทุกประกาศแบบไม่มีการคัดออกสำหรับแผงจัดการ
+      if (request.method === "GET" && url.pathname === "/api/admin/posts") {
+        const supabaseTarget = `${env.SUPABASE_URL}/rest/v1/posts?order=id.desc`;
+        const response = await fetch(supabaseTarget, {
+          headers: {
+            "apikey": env.SUPABASE_KEY,
+            "Authorization": `Bearer ${env.SUPABASE_KEY}`,
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Supabase Error: ${response.status} - ${errText}`);
         }
 
-        // เปิดป๊อปอัพหน้าแก้ไขรายละเอียดตัวสะกดคำผิด
-        function openEditModal(id) {
-            const post = allPosts.find(p => p.id === id);
-            if (!post) return;
+        const data = await response.json();
+        return new Response(JSON.stringify(data), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
 
-            document.getElementById("edit-id").value = post.id;
-            document.getElementById("edit-itemName").value = post.itemName;
-            document.getElementById("edit-category").value = post.category;
-            document.getElementById("edit-eventDate").value = post.eventDate;
-            document.getElementById("edit-location").value = post.location;
-            document.getElementById("edit-details").value = post.details || "";
-            document.getElementById("edit-contactName").value = post.contactName;
-            document.getElementById("edit-phone").value = post.phone;
-            document.getElementById("edit-lineId").value = post.lineId || "-";
+      // 2.3 แก้ไขสถานะประกาศ เช่น ปิดเคสเป็นสำเร็จ หรือกู้คืนโพสต์
+      if (request.method === "POST" && url.pathname === "/api/admin/posts/update-status") {
+        const payload = await request.json();
+        const updateTarget = `${env.SUPABASE_URL}/rest/v1/posts?id=eq.${payload.id}`;
+        const response = await fetch(updateTarget, {
+          method: "PATCH",
+          headers: {
+            "apikey": env.SUPABASE_KEY,
+            "Authorization": `Bearer ${env.SUPABASE_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ status: payload.status })
+        });
 
-            document.getElementById("edit-modal").classList.remove("hidden");
-            document.body.style.overflow = "hidden";
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Supabase Update Error: ${errText}`);
         }
 
-        // ปิดแบบฟอร์มป๊อปอัพ
-        function closeEditModal() {
-            document.getElementById("edit-modal").classList.add("hidden");
-            document.body.style.overflow = "";
+        return new Response(JSON.stringify({ status: "success", message: "ปรับสถานะสำเร็จ" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      // 2.4 ลบข้อมูลโพสต์ออกจากตารางอย่างถาวร
+      if (request.method === "POST" && url.pathname === "/api/admin/posts/delete") {
+        const payload = await request.json();
+        const deleteTarget = `${env.SUPABASE_URL}/rest/v1/posts?id=eq.${payload.id}`;
+        const response = await fetch(deleteTarget, {
+          method: "DELETE",
+          headers: {
+            "apikey": env.SUPABASE_KEY,
+            "Authorization": `Bearer ${env.SUPABASE_KEY}`,
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Supabase Delete Error: ${errText}`);
         }
 
-        // ส่งตรรกะแบบฟอร์มการอัปเดตรายละเอียด
-        function submitEditForm(event) {
-            event.preventDefault();
-            const password = sessionStorage.getItem("admin_password");
-            const id = document.getElementById("edit-id").value;
+        return new Response(JSON.stringify({ status: "success", message: "ลบโพสต์ถาวรสำเร็จ" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
 
-            const editPayload = {
-                id: id,
-                itemName: document.getElementById("edit-itemName").value,
-                category: document.getElementById("edit-category").value,
-                eventDate: document.getElementById("edit-eventDate").value,
-                location: document.getElementById("edit-location").value,
-                details: document.getElementById("edit-details").value,
-                contactName: document.getElementById("edit-contactName").value,
-                phone: document.getElementById("edit-phone").value,
-                lineId: document.getElementById("edit-lineId").value
-            };
+      // 2.5 บันทึกข้อมูลที่แก้ไขตัวสะกดคำผิดของการ์ดประกาศ
+      if (request.method === "POST" && url.pathname === "/api/admin/posts/edit") {
+        const payload = await request.json();
+        const editTarget = `${env.SUPABASE_URL}/rest/v1/posts?id=eq.${payload.id}`;
+        const response = await fetch(editTarget, {
+          method: "PATCH",
+          headers: {
+            "apikey": env.SUPABASE_KEY,
+            "Authorization": `Bearer ${env.SUPABASE_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            itemName: payload.itemName,
+            category: payload.category,
+            eventDate: payload.eventDate,
+            location: payload.location,
+            details: payload.details,
+            contactName: payload.contactName,
+            phone: payload.phone,
+            lineId: payload.lineId
+          })
+        });
 
-            showLoading("กำลังส่งบันทึกแก้ไขไปยังฐานข้อมูล...");
-
-            fetch(`${WORKER_API_URL}/api/admin/posts/edit`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Admin-Password": password
-                },
-                body: JSON.stringify(editPayload)
-            })
-            .then(res => {
-                if (!res.ok) throw new Error("ไม่ผ่านด่านเช็กสิทธิ์ล็อกอิน");
-                return res.json();
-            })
-            .then(data => {
-                if (data.status === "success") {
-                    Swal.fire({ title: "อัปเดตสำเร็จ!", text: "รายละเอียดได้รับการบันทึกบน Supabase แล้ว", icon: "success", timer: 1500, showConfirmButton: false });
-                    closeEditModal();
-                    fetchAdminData(password);
-                }
-            })
-            .catch(err => {
-                Swal.fire("ข้อผิดพลาด!", err.message, "error");
-            });
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Supabase Edit Error: ${errText}`);
         }
 
-        // ตัวช่วยแสดงแจ้งเตือนการเชื่อมต่อเครือข่าย
-        function showLoading(msg) {
-            Swal.fire({
-                title: msg,
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-        }
-    </script>
-</body>
-</html>
+        return new Response(JSON.stringify({ status: "success", message: "แก้ไขรายละเอียดสำเร็จ" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      return new Response("SF Lost & Found Workers Gateway Running Successfully.", {
+        status: 200,
+        headers: { "Content-Type": "text/plain" }
+      });
+
+    } catch (err) {
+      return new Response(JSON.stringify({ status: "error", message: err.message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+  }
+};
