@@ -4,20 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HR Admin - ระบบจัดการของสูญหาย SF Lost & Found</title>
+    <!-- Tailwind CSS สำหรับระบบ UI ดีไซน์หรูหราทันสมัย -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SweetAlert2 สำหรับป๊อปอัปแจ้งเตือนและยกระดับ UX -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- FontAwesome สำหรับชุดไอคอนกราฟิกตกแต่งตารางและปุ่ม -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; }
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background-color: #f1f5f9; 
+        }
     </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
+    <!-- ส่วนสำคัญ 🌐: ตั้งค่าเชื่อมโยงหลังบ้าน (ลิงก์ของ Cloudflare Worker v2 ตัวจริงของคุณ) -->
     <script>
         const WORKER_API_URL = "https://sflost0found.jaypichayut.workers.dev";
     </script>
 
+    <!-- ================================================== -->
+    <!-- หน้าจอล็อกอินแอดมิน (Security Login Overlay) -->
+    <!-- ================================================== -->
     <div id="login-container" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl border border-slate-100">
             <div class="text-center mb-6">
@@ -45,7 +56,11 @@
         </div>
     </div>
 
+    <!-- ================================================== -->
+    <!-- แผงแดชบอร์ดและตารางจัดการหลัก (Dashboard Panel) -->
+    <!-- ================================================== -->
     <div id="admin-panel" class="hidden flex-grow flex flex-col">
+        <!-- แถบ Header คุมโดเมน -->
         <header class="bg-white shadow-sm border-b border-slate-100 sticky top-0 z-30">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
@@ -65,7 +80,9 @@
             </div>
         </header>
 
+        <!-- โซนแดชบอร์ดหลัก -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
+            <!-- การ์ดตัวเลขสถิติความก้าวหน้า -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                     <div>
@@ -90,6 +107,7 @@
                 </div>
             </div>
 
+            <!-- กล่องกรองตั้งค่า ค้นหาสดแบบ Real-time -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-3 items-center justify-between">
                 <div class="relative w-full md:max-w-md">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -97,11 +115,12 @@
                     </span>
                     <input type="text" id="search-input" oninput="applyFiltersAndRender()" placeholder="ค้นหาตามชื่อสิ่งของ, สถานที่ หรือชื่อผู้แจ้ง..." class="block w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:border-indigo-500 transition-all">
                 </div>
+
                 <div class="flex flex-wrap gap-2 w-full md:w-auto">
                     <select id="filter-status" onchange="applyFiltersAndRender()" class="bg-slate-50 border border-slate-200 text-slate-700 py-2.5 px-4 rounded-xl text-xs font-medium focus:outline-none transition-all">
                         <option value="">สถานะ: ทั้งหมด</option>
-                        <option value="ใช้งาน">ใช้งานอยู่</option>
-                        <option value="สำเร็จ">ปิดสำเร็จ</option>
+                        <option value="ใช้งาน">ใช้งาน (กำลังตามหา/รอเจ้าของ)</option>
+                        <option value="สำเร็จ">สำเร็จ (ส่งมอบคืนแล้ว)</option>
                     </select>
                     <select id="filter-type" onchange="applyFiltersAndRender()" class="bg-slate-50 border border-slate-200 text-slate-700 py-2.5 px-4 rounded-xl text-xs font-medium focus:outline-none transition-all">
                         <option value="">ประเภท: ทั้งหมด</option>
@@ -111,6 +130,7 @@
                 </div>
             </div>
 
+            <!-- ตารางแสดงรายการข้อมูล (Data Table) -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -118,24 +138,32 @@
                             <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 text-xs font-bold uppercase tracking-wider">
                                 <th class="px-6 py-4">รูปภาพ</th>
                                 <th class="px-6 py-4">ชื่อสิ่งของ</th>
-                                <th class="px-6 py-4">ประเภท</th>
-                                <th class="px-6 py-4">สถานที่/วันเกิดเหตุ</th>
-                                <th class="px-6 py-4">ผู้ประกาศ</th>
+                                <th class="px-6 py-4">ประเภท/หมวดหมู่</th>
+                                <th class="px-6 py-4">สถานที่/วันเวลาเกิดเหตุ</th>
+                                <th class="px-6 py-4">ผู้ประกาศ/ติดต่อ</th>
                                 <th class="px-6 py-4">สถานะ</th>
                                 <th class="px-6 py-4 text-right">การจัดการ</th>
                             </tr>
                         </thead>
-                        <tbody id="table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                        <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
+                            <!-- แถวข้อมูลถูกกรอกแบบไดนามิกผ่าน Javascript -->
+                        </tbody>
                     </table>
                 </div>
+
+                <!-- แสดงผลเมื่อไม่พบประวัติใดๆ -->
                 <div id="no-data-state" class="hidden text-center py-16 bg-slate-50">
                     <i class="fa-solid fa-folder-open text-4xl text-slate-300"></i>
                     <h3 class="font-bold text-slate-700 mt-2">ไม่พบรายการข้อมูล</h3>
+                    <p class="text-xs text-slate-400 mt-1">ไม่มีข้อมูลที่ตรงกับคำค้นหาหรือตัวกรองในขณะนี้</p>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- ================================================== -->
+    <!-- ป๊อปอัพฟอร์มแก้ไขรายละเอียดประกาศ (Edit Modal) -->
+    <!-- ================================================== -->
     <div id="edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
@@ -149,10 +177,12 @@
             
             <form onsubmit="submitEditForm(event)" class="overflow-y-auto p-6 space-y-4">
                 <input type="hidden" id="edit-id">
+                
                 <div>
                     <label class="block text-slate-700 font-semibold text-xs mb-1">ชื่อสิ่งของ *</label>
                     <input type="text" id="edit-itemName" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:border-indigo-500 transition-all">
                 </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-slate-700 font-semibold text-xs mb-1">หมวดหมู่ *</label>
@@ -169,28 +199,33 @@
                         <input type="date" id="edit-eventDate" required class="w-full bg-slate-50 border border-slate-200 text-slate-700 py-1.5 px-3 rounded-xl text-xs focus:outline-none transition-all">
                     </div>
                 </div>
+
                 <div>
                     <label class="block text-slate-700 font-semibold text-xs mb-1">สถานที่เกิดเหตุ *</label>
-                    <input type="text" id="edit-location" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none">
+                    <input type="text" id="edit-location" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:border-indigo-500 transition-all">
                 </div>
+
                 <div>
-                    <label class="block text-slate-700 font-semibold text-xs mb-1">รายละเอียดเพิ่มเติม</label>
+                    <label class="block text-slate-700 font-semibold text-xs mb-1">รายละเอียดลักษณะพิเศษ (เพิ่มเติม)</label>
                     <textarea id="edit-details" rows="3" class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none resize-none"></textarea>
                 </div>
+
                 <div class="border-t border-slate-100 pt-3 grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-slate-700 font-semibold text-xs mb-1">ชื่อผู้แจ้ง *</label>
+                        <label class="block text-slate-700 font-semibold text-xs mb-1">ชื่อผู้แจ้งติดต่อ *</label>
                         <input type="text" id="edit-contactName" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-slate-700 font-semibold text-xs mb-1">เบอร์โทรศัพท์ *</label>
+                        <label class="block text-slate-700 font-semibold text-xs mb-1">เบอร์โทรศัพท์ติดต่อกลับ *</label>
                         <input type="tel" id="edit-phone" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none">
                     </div>
                 </div>
+
                 <div>
                     <label class="block text-slate-700 font-semibold text-xs mb-1">LINE ID</label>
                     <input type="text" id="edit-lineId" class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2 px-3 rounded-xl text-sm focus:outline-none">
                 </div>
+
                 <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
                     <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition">ยกเลิก</button>
                     <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition">บันทึกข้อมูลแก้ไข</button>
@@ -199,7 +234,17 @@
         </div>
     </div>
 
+    <!-- Footer ล่างสุด -->
+    <footer class="bg-white border-t border-slate-100 py-6 text-center text-xs text-slate-400 mt-auto">
+        <p>© 2026 SF Lost & Found. แผงควบคุมระบบสำหรับผู้ดูแลฝ่ายบุคคล (HR Admin Only)</p>
+    </footer>
+
+    <!-- ส่วนตรรกะประมวลผล Javascript (Controller) -->
     <script>
+        let allPosts = [];
+        let filteredPosts = [];
+
+        // เช็กสิทธิ์ล็อกอินค้างเซสชัน (Session Storage) ทันทีที่โหลดหน้าจอ
         window.onload = function() {
             const storedPass = sessionStorage.getItem("admin_password");
             if (storedPass) {
@@ -209,10 +254,13 @@
             }
         };
 
+        // ยื่นคำร้องตรวจสอบและเข้าสู่ระบบแอดมิน
         function handleLogin(event) {
             event.preventDefault();
             const password = document.getElementById("admin-pass-input").value;
+            
             showLoading("กำลังวิเคราะห์สิทธิ์แอดมิน...");
+
             fetch(`${WORKER_API_URL}/api/admin/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -232,34 +280,69 @@
                 }
             })
             .catch(err => {
-                Swal.fire({ title: "ไม่ผ่านสิทธิ์", text: err.message, icon: "error", confirmButtonColor: "#4f46e5" });
+                Swal.fire({
+                    title: "ไม่ได้รับสิทธิ์เข้าดำเนินการ",
+                    text: err.message,
+                    icon: "error",
+                    confirmButtonColor: "#4f46e5"
+                });
             });
         }
 
+        // ออกจากระบบ ล้างความทรงจำบนหน่วยความจำเซสชัน
         function handleLogout() {
             sessionStorage.removeItem("admin_password");
             window.location.reload();
         }
 
+        // ดึงข้อมูลรายการประกาศทั้งหมดในคลังผ่านพาสเวิร์ดแอดมินที่เข้ารหัสผ่าน Header
         function fetchAdminData(password) {
             fetch(`${WORKER_API_URL}/api/admin/posts`, {
                 method: "GET",
-                headers: { "X-Admin-Password": password, "x-admin-password": password }
+                headers: { 
+                    "X-Admin-Password": password,
+                    "x-admin-password": password
+                }
             })
-            .then(res => {
-                if (!res.ok) { handleLogout(); throw new Error("หมดอายุความปลอดภัย"); }
+            .then(async res => {
+                if (!res.ok) {
+                    const errBody = await res.json().catch(() => ({}));
+                    const errMsg = errBody.message || "หมดอายุความปลอดภัยหรือความปลอดภัยล้มเหลว";
+                    throw new Error(errMsg);
+                }
                 return res.json();
             })
-            .then(data => { allPosts = data; renderStats(); applyFiltersAndRender(); })
-            .catch(err => console.error(err));
+            .then(data => {
+                allPosts = data;
+                renderStats();
+                applyFiltersAndRender();
+            })
+            .catch(err => {
+                console.error(err);
+                // แสดงผลป๊อปอัปบอกความจริงก่อนโดนเตะออกจากระบบ
+                Swal.fire({
+                    title: "เกิดข้อผิดพลาดในการดึงข้อมูลตาราง",
+                    text: err.message + " (กรุณาตรวจสอบว่าคุณเปิดสิทธิ์ตารางใน Supabase หรือคีย์ API ใน Worker ถูกต้องหรือไม่)",
+                    icon: "error",
+                    confirmButtonColor: "#4f46e5"
+                }).then(() => {
+                    handleLogout(); // ล้างรหัสผ่านและรีเซ็ตหน้าจอหลังจากกดยอมรับป๊อปอัปสีแดง
+                });
+            });
         }
 
+        // สรุปยอดข้อมูลรายงานการติดตามผล
         function renderStats() {
-            document.getElementById("stat-total").innerText = allPosts.length;
-            document.getElementById("stat-active").innerText = allPosts.filter(p => p.status === "ใช้งาน").length;
-            document.getElementById("stat-success").innerText = allPosts.filter(p => p.status === "สำเร็จ").length;
+            const total = allPosts.length;
+            const active = allPosts.filter(p => p.status === "ใช้งาน").length;
+            const success = allPosts.filter(p => p.status === "สำเร็จ").length;
+
+            document.getElementById("stat-total").innerText = total;
+            document.getElementById("stat-active").innerText = active;
+            document.getElementById("stat-success").innerText = success;
         }
 
+        // กรองสถิติ คัดแยกเงื่อนไข และสั่งเรนเดอร์ตารางแบบเรียลไทม์
         function applyFiltersAndRender() {
             const searchVal = document.getElementById("search-input").value.toLowerCase().trim();
             const statusVal = document.getElementById("filter-status").value;
@@ -268,33 +351,44 @@
             filteredPosts = allPosts.filter(item => {
                 if (statusVal && item.status !== statusVal) return false;
                 if (typeVal && item.type !== typeVal) return false;
+
                 if (searchVal) {
                     const matchName = item.itemName.toLowerCase().includes(searchVal);
                     const matchLoc = item.location.toLowerCase().includes(searchVal);
                     const matchContact = item.contactName.toLowerCase().includes(searchVal);
-                    if (!matchName && !matchLoc && !matchContact) return false;
+                    const matchDetails = (item.details || '').toLowerCase().includes(searchVal);
+                    if (!matchName && !matchLoc && !matchContact && !matchDetails) return false;
                 }
                 return true;
             });
 
             const tbody = document.getElementById("table-body");
+            const emptyState = document.getElementById("no-data-state");
             tbody.innerHTML = "";
-            document.getElementById("no-data-state").classList.toggle("hidden", filteredPosts.length > 0);
+
+            if (filteredPosts.length === 0) {
+                emptyState.classList.remove("hidden");
+                return;
+            }
+            emptyState.classList.add("hidden");
 
             filteredPosts.forEach(post => {
                 const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-50 transition duration-150 border-b border-slate-100";
+                tr.className = "hover:bg-slate-50/80 transition duration-150 border-b border-slate-100";
+                
                 let imagesArr = post.images ? post.images.split(",") : [];
-                let imgHTML = imagesArr.length > 0 && imagesArr[0] !== "" 
-                    ? `<img src="${imagesArr[0]}" class="w-10 h-10 object-cover rounded-lg border shadow-sm cursor-pointer" onclick="window.open('${imagesArr[0]}', '_blank')">`
-                    : `<div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400"><i class="fa-regular fa-image"></i></div>`;
+                let imgHTML = `<div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400"><i class="fa-regular fa-image"></i></div>`;
+                if (imagesArr.length > 0 && imagesArr[0] !== "") {
+                    imgHTML = `<img src="${imagesArr[0]}" class="w-10 h-10 object-cover rounded-lg border shadow-sm cursor-pointer" onclick="window.open('${imagesArr[0]}', '_blank')">`;
+                }
 
-                const typeLabel = post.type === "ประกาศของหาย" 
-                    ? `<span class="bg-rose-50 text-rose-500 border border-rose-100 px-2 py-0.5 rounded-md text-[11px] font-bold">ของหาย</span>`
-                    : `<span class="bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-0.5 rounded-md text-[11px] font-bold">หาเจ้าของ</span>`;
+                const isLost = post.type === "ประกาศของหาย";
+                const typeLabel = isLost 
+                    ? `<span class="bg-rose-50 text-rose-500 border border-rose-100 px-2 py-0.5 rounded-md text-[11px] font-bold">ประกาศของหาย</span>`
+                    : `<span class="bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-0.5 rounded-md text-[11px] font-bold">ประกาศหาเจ้าของ</span>`;
 
                 const statusLabel = post.status === "ใช้งาน"
-                    ? `<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-600 border border-amber-100 px-2.5 py-0.5 rounded-full text-xs font-semibold"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span> ใช้งานอยู่</span>`
+                    ? `<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-600 border border-amber-100 px-2.5 py-0.5 rounded-full text-xs font-semibold"><span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span> ใช้งานอยู่</span>`
                     : `<span class="inline-flex items-center gap-1 bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-0.5 rounded-full text-xs font-semibold"><span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span> ปิดสำเร็จ</span>`;
 
                 const actionToggleBtn = post.status === "ใช้งาน"
@@ -304,57 +398,109 @@
                 tr.innerHTML = `
                     <td class="px-6 py-4">${imgHTML}</td>
                     <td class="px-6 py-4 font-bold text-slate-900">${post.itemName}</td>
-                    <td class="px-6 py-4 space-y-1"><div>${typeLabel}</div><div class="text-[11px] text-slate-400 font-semibold">${post.category}</div></td>
-                    <td class="px-6 py-4 text-xs text-slate-500 space-y-0.5"><div class="font-bold text-slate-700"><i class="fa-solid fa-map-pin text-rose-500"></i> ${post.location}</div><div>${post.eventDate}</div></td>
-                    <td class="px-6 py-4 text-xs text-slate-500 space-y-0.5"><div class="font-bold text-slate-700">${post.contactName}</div><div>โทร: ${post.phone}</div></td>
+                    <td class="px-6 py-4 space-y-1">
+                        <div>${typeLabel}</div>
+                        <div class="text-[11px] text-slate-400 font-semibold">${post.category}</div>
+                    </td>
+                    <td class="px-6 py-4 text-xs text-slate-500 space-y-0.5">
+                        <div class="font-bold text-slate-700"><i class="fa-solid fa-map-pin text-rose-500"></i> ${post.location}</div>
+                        <div><i class="fa-regular fa-calendar text-slate-400"></i> ${post.eventDate}</div>
+                    </td>
+                    <td class="px-6 py-4 text-xs text-slate-500 space-y-0.5">
+                        <div class="font-bold text-slate-700">${post.contactName}</div>
+                        <div>โทร: ${post.phone}</div>
+                        ${post.lineId && post.lineId !== '-' ? `<div>LINE: ${post.lineId}</div>` : ''}
+                    </td>
                     <td class="px-6 py-4">${statusLabel}</td>
-                    <td class="px-6 py-4 text-right"><div class="flex items-center justify-end gap-1.5">${actionToggleBtn}<button onclick="openEditModal(${post.id})" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold transition"><i class="fa-regular fa-edit"></i> แก้ไข</button><button onclick="deletePostPermanently(${post.id})" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg text-xs font-bold transition"><i class="fa-regular fa-trash-can"></i> ลบ</button></div></td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-1.5">
+                            ${actionToggleBtn}
+                            <button onclick="openEditModal(${post.id})" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"><i class="fa-regular fa-edit"></i> แก้ไข</button>
+                            <button onclick="deletePostPermanently(${post.id})" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"><i class="fa-regular fa-trash-can"></i> ลบ</button>
+                        </div>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
+        // อัปเดตสถานะประกาศ (ส่งไปแก้ไขช่อง status ในฐานข้อมูล Supabase)
         function updatePostStatus(id, newStatus) {
             const password = sessionStorage.getItem("admin_password");
-            showLoading("กำลังอัปเดตสถานะ...");
+            
+            showLoading("กำลังอัปเดตสิทธิ์และเปลี่ยนสถานะ...");
+
             fetch(`${WORKER_API_URL}/api/admin/posts/update-status`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "X-Admin-Password": password, "x-admin-password": password },
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Admin-Password": password,
+                    "x-admin-password": password
+                },
                 body: JSON.stringify({ id: id, status: newStatus })
             })
-            .then(res => { if (!res.ok) throw new Error("สิทธิ์ไม่ถูกต้อง"); return res.json(); })
-            .then(() => { Swal.fire({ title: "ดำเนินการสำเร็จ!", icon: "success", timer: 1000, showConfirmButton: false }); fetchAdminData(password); })
-            .catch(err => Swal.fire("ข้อผิดพลาด!", err.message, "error"));
+            .then(res => {
+                if (!res.ok) throw new Error("ไม่ผ่านด่านเช็กสิทธิ์ความปลอดภัยแอดมิน");
+                return res.json();
+            })
+            .then(data => {
+                if (data.status === "success") {
+                    Swal.fire({ title: "ดำเนินการสำเร็จ!", icon: "success", timer: 1200, showConfirmButton: false });
+                    fetchAdminData(password);
+                }
+            })
+            .catch(err => {
+                Swal.fire("ข้อผิดพลาด!", err.message, "error");
+            });
         }
 
+        // ลบประกาศออกจากระบบถาวร (ลบแถวคีย์ในฐานข้อมูลจริง Supabase)
         function deletePostPermanently(id) {
             const password = sessionStorage.getItem("admin_password");
+
             Swal.fire({
-                title: "ต้องการลบถาวรใช่หรือไม่?",
-                text: "ข้อมูลจะถูกลบออกจากฐานข้อมูล Supabase ทันที ไม่สามารถกู้คืนได้!",
+                title: "ยืนยันต้องการลบโพสต์ถาวร?",
+                text: "ประวัติของชิ้นนี้จะถูกลบออกจากตาราง Supabase ตลอดกาล และไม่สามารถย้อนหรือกู้คืนกลับมาได้อีก!",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#ef4444",
-                confirmButtonText: "ลบถาวร",
+                cancelButtonColor: "#64748b",
+                confirmButtonText: "ใช่, สั่งลบถาวร!",
                 cancelButtonText: "ยกเลิก"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    showLoading("กำลังลบข้อมูล...");
+                    showLoading("กำลังลบแถวประวัติในตาราง...");
                     fetch(`${WORKER_API_URL}/api/admin/posts/delete`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json", "X-Admin-Password": password, "x-admin-password": password },
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-Admin-Password": password,
+                            "x-admin-password": password
+                        },
                         body: JSON.stringify({ id: id })
                     })
-                    .then(res => { if (!res.ok) throw new Error("ลบไม่สำเร็จ"); return res.json(); })
-                    .then(() => { Swal.fire("ลบแล้ว!", "ลบข้อมูลเรียบร้อย", "success"); fetchAdminData(password); })
-                    .catch(err => Swal.fire("ล้มเหลว!", err.message, "error"));
+                    .then(res => {
+                        if (!res.ok) throw new Error("ไม่ได้รับอนุญาตให้ส่งคำสั่งลบข้อมูล");
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.status === "success") {
+                            Swal.fire("เรียบร้อย!", "ลบข้อมูลออกจากฐานข้อมูลแล้ว", "success");
+                            fetchAdminData(password);
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire("สั่งลบล้มเหลว!", err.message, "error");
+                    });
                 }
             });
         }
 
+        // เปิดป๊อปอัพหน้าแก้ไขรายละเอียดตัวสะกดคำผิด
         function openEditModal(id) {
             const post = allPosts.find(p => p.id === id);
             if (!post) return;
+
             document.getElementById("edit-id").value = post.id;
             document.getElementById("edit-itemName").value = post.itemName;
             document.getElementById("edit-category").value = post.category;
@@ -364,15 +510,23 @@
             document.getElementById("edit-contactName").value = post.contactName;
             document.getElementById("edit-phone").value = post.phone;
             document.getElementById("edit-lineId").value = post.lineId || "-";
+
             document.getElementById("edit-modal").classList.remove("hidden");
+            document.body.style.overflow = "hidden";
         }
 
-        function closeEditModal() { document.getElementById("edit-modal").classList.add("hidden"); }
+        // ปิดแบบฟอร์มป๊อปอัพ
+        function closeEditModal() {
+            document.getElementById("edit-modal").classList.add("hidden");
+            document.body.style.overflow = "";
+        }
 
+        // ส่งตรรกะแบบฟอร์มการอัปเดตรายละเอียด
         function submitEditForm(event) {
             event.preventDefault();
             const password = sessionStorage.getItem("admin_password");
             const id = document.getElementById("edit-id").value;
+
             const editPayload = {
                 id: id,
                 itemName: document.getElementById("edit-itemName").value,
@@ -384,18 +538,42 @@
                 phone: document.getElementById("edit-phone").value,
                 lineId: document.getElementById("edit-lineId").value
             };
-            showLoading("กำลังบันทึกการแก้ไข...");
+
+            showLoading("กำลังส่งบันทึกแก้ไขไปยังฐานข้อมูล...");
+
             fetch(`${WORKER_API_URL}/api/admin/posts/edit`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "X-Admin-Password": password, "x-admin-password": password },
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Admin-Password": password,
+                    "x-admin-password": password
+                },
                 body: JSON.stringify(editPayload)
             })
-            .then(res => { if (!res.ok) throw new Error("แก้ไขไม่ได้"); return res.json(); })
-            .then(() => { Swal.fire({ title: "แก้ไขสำเร็จ!", icon: "success", timer: 1000, showConfirmButton: false }); closeEditModal(); fetchAdminData(password); })
-            .catch(err => Swal.fire("ล้มเหลว!", err.message, "error"));
+            .then(res => {
+                if (!res.ok) throw new Error("ไม่ผ่านด่านเช็กสิทธิ์ล็อกอิน");
+                return res.json();
+            })
+            .then(data => {
+                if (data.status === "success") {
+                    Swal.fire({ title: "อัปเดตสำเร็จ!", text: "รายละเอียดได้รับการบันทึกบน Supabase แล้ว", icon: "success", timer: 1500, showConfirmButton: false });
+                    closeEditModal();
+                    fetchAdminData(password);
+                }
+            })
+            .catch(err => {
+                Swal.fire("ข้อผิดพลาด!", err.message, "error");
+            });
         }
 
-        function showLoading(msg) { Swal.fire({ title: msg, allowOutsideClick: false, didOpen: () => Swal.showLoading() }); }
+        // ตัวช่วยแสดงแจ้งเตือนการเชื่อมต่อเครือข่าย
+        function showLoading(msg) {
+            Swal.fire({
+                title: msg,
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+        }
     </script>
 </body>
 </html>
