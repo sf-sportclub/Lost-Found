@@ -17,6 +17,19 @@
             font-family: 'Kanit', sans-serif; 
             background-color: #f1f5f9; 
         }
+        
+        /* กล่องครอบรูปสี่เหลี่ยมผืนผ้าสัดส่วนเหมาะสมสำหรับการเปิดพรีวิวในตาราง */
+        .preview-img-container {
+            width: 44px;
+            height: 44px;
+            overflow: hidden;
+            border-radius: 0.75rem;
+        }
+        .preview-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
@@ -39,7 +52,6 @@
                 </div>
                 <h1 class="text-2xl font-bold text-slate-900">ระบบหลังบ้าน HR Admin</h1>
                 <p class="text-slate-400 text-sm mt-1">กรุณากรอกรหัสผ่านลับของฝ่ายบุคคลเพื่อเข้าจัดการข้อมูล</p>
-                <!-- 🛡️ ปรับปรุงความปลอดภัย: ลบป้ายเฉลยรหัสผ่านสำหรับการทดสอบออกทั้งหมด 100% -->
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
@@ -165,6 +177,103 @@
     </div>
 
     <!-- ================================================== -->
+    <!-- 🚨 ใหม่: ป๊อปอัพ "โพสการ์ด" แสดงรายละเอียดเต็มใบ (Detail Postcard Modal) -->
+    <!-- ================================================== -->
+    <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <!-- ส่วนหัว Modal -->
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div class="flex items-center gap-2">
+                    <span id="modal-type-badge"></span>
+                    <span id="modal-category-badge"></span>
+                </div>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-200 p-2 rounded-full transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- ส่วนเนื้อหาที่ Scroll ได้ -->
+            <div class="overflow-y-auto p-6 flex-grow space-y-6">
+                <!-- แกลเลอรีรูปภาพของโพสต์ -->
+                <div>
+                    <div id="modal-image-container" class="w-full bg-slate-100 rounded-2xl flex items-center justify-center overflow-hidden relative border border-slate-150" style="height: 320px;">
+                        <!-- รูปขนาดใหญ่จะถูกใส่ตรงนี้ผ่าน JS -->
+                    </div>
+                    <!-- รูปภาพย่อยๆ Thumbnail (ถ้ามีรูปมากกว่า 1 รูป) -->
+                    <div id="modal-thumbnails" class="flex flex-wrap gap-2 mt-3"></div>
+                </div>
+
+                <!-- ข้อมูลรายละเอียดของสิ่งของ -->
+                <div class="space-y-4">
+                    <div>
+                        <span class="text-xs text-slate-400 font-bold uppercase tracking-wider block">ชื่อสิ่งของ</span>
+                        <h2 id="modal-title" class="text-2xl font-bold text-slate-900 mt-0.5"></h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div class="flex items-start gap-2.5">
+                            <div class="p-2 bg-blue-50 text-blue-600 rounded-xl mt-0.5"><i class="fa-regular fa-calendar-days text-sm"></i></div>
+                            <div>
+                                <span class="text-xs text-slate-400 block" id="modal-date-label">วันที่</span>
+                                <span id="modal-date" class="text-sm font-semibold text-slate-800"></span>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <div class="p-2 bg-red-50 text-red-500 rounded-xl mt-0.5"><i class="fa-solid fa-map-pin text-sm"></i></div>
+                            <div>
+                                <span class="text-xs text-slate-400 block" id="modal-loc-label">สถานที่</span>
+                                <span id="modal-location" class="text-sm font-semibold text-slate-800"></span>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <div class="p-2 bg-purple-50 text-purple-600 rounded-xl mt-0.5"><i class="fa-solid fa-user text-sm"></i></div>
+                            <div>
+                                <span class="text-xs text-slate-400 block">ผู้ประกาศแจ้ง</span>
+                                <span id="modal-contact" class="text-sm font-semibold text-slate-800"></span>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <div class="p-2 bg-sky-50 text-sky-600 rounded-xl mt-0.5"><i class="fa-solid fa-clock text-sm"></i></div>
+                            <div>
+                                <span class="text-xs text-slate-400 block">เวลาลงระบบ</span>
+                                <span id="modal-timestamp" class="text-sm font-semibold text-slate-800"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-xs text-slate-400 font-bold uppercase tracking-wider block">รายละเอียดประกาศเพิ่มเติม</span>
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 mt-1">
+                            <p id="modal-details" class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">-</p>
+                        </div>
+                    </div>
+
+                    <!-- ช่องทางการติดต่อ -->
+                    <div class="border-t border-slate-100 pt-5 space-y-3">
+                        <h4 class="font-bold text-slate-900 text-sm">ช่องทางการติดต่อด่วน</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <a id="modal-phone-btn" href="#" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm transition shadow-md shadow-blue-500/10">
+                                <i class="fa-solid fa-phone"></i> โทร: <span id="modal-phone-text"></span>
+                            </a>
+                            <div id="modal-line-container" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm cursor-pointer transition shadow-md shadow-emerald-500/10">
+                                <i class="fa-regular fa-comment-dots"></i> LINE ID: <span id="modal-line-text">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ส่วนท้าย Modal ปุ่มอัปเดตและแผงสั่งการระบบคลาวด์สำหรับ HR (Admin Action Tray) -->
+            <div id="modal-footer-actions" class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-wrap gap-2 justify-between items-center">
+                <span id="modal-status-pill"></span>
+                <div class="flex items-center gap-2" id="modal-action-buttons">
+                    <!-- ปุ่มแก้ไขและลบแบบด่วนจะถูกเรนเดอร์ผ่าน JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================== -->
     <!-- ป๊อปอัพฟอร์มแก้ไขรายละเอียดข้อมูล (Edit Modal) -->
     <!-- ================================================== -->
     <div id="edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -237,7 +346,7 @@
         </div>
     </div>
 
-    <!-- Footer -->
+    <!-- Footer ล่างสุด -->
     <footer class="bg-white border-t border-slate-100 py-6 text-center text-xs text-slate-400 mt-auto">
         <p>© 2026 SF Lost & Found. แผงควบคุมระบบสำหรับผู้ดูแลฝ่ายบุคคล (HR Admin Only)</p>
     </footer>
@@ -380,9 +489,9 @@
                 tr.className = "hover:bg-slate-50/80 transition duration-150 border-b border-slate-100";
                 
                 let imagesArr = post.images ? post.images.split(",") : [];
-                let imgHTML = `<div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400"><i class="fa-regular fa-image"></i></div>`;
+                let imgHTML = `<div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 cursor-pointer" onclick="openDetailModal(${post.id})"><i class="fa-regular fa-image"></i></div>`;
                 if (imagesArr.length > 0 && imagesArr[0] !== "") {
-                    imgHTML = `<img src="${imagesArr[0]}" class="w-10 h-10 object-cover rounded-lg border shadow-sm cursor-pointer" onclick="window.open('${imagesArr[0]}', '_blank')">`;
+                    imgHTML = `<img src="${imagesArr[0]}" class="w-10 h-10 object-cover rounded-lg border shadow-sm cursor-pointer" onclick="openDetailModal(${post.id})">`;
                 }
 
                 const isLost = post.type === "ประกาศของหาย";
@@ -400,7 +509,7 @@
 
                 tr.innerHTML = `
                     <td class="px-6 py-4">${imgHTML}</td>
-                    <td class="px-6 py-4 font-bold text-slate-900">${post.itemName}</td>
+                    <td class="px-6 py-4 font-bold text-slate-900 cursor-pointer hover:text-indigo-600 transition" onclick="openDetailModal(${post.id})">${post.itemName}</td>
                     <td class="px-6 py-4 space-y-1">
                         <div>${typeLabel}</div>
                         <div class="text-[11px] text-slate-400 font-semibold">${post.category}</div>
@@ -417,6 +526,7 @@
                     <td class="px-6 py-4">${statusLabel}</td>
                     <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-1.5">
+                            <button onclick="openDetailModal(${post.id})" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"><i class="fa-regular fa-eye"></i> ดูข้อมูล</button>
                             ${actionToggleBtn}
                             <button onclick="openEditModal(${post.id})" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"><i class="fa-regular fa-edit"></i> แก้ไข</button>
                             <button onclick="deletePostPermanently(${post.id})" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"><i class="fa-regular fa-trash-can"></i> ลบ</button>
@@ -426,6 +536,165 @@
                 tbody.appendChild(tr);
             });
         }
+
+        // ==========================================
+        // 🚨 ใหม่: ระบบควบคุมป๊อปอัพ Detailed Postcard Modal
+        // ==========================================
+        function openDetailModal(id) {
+            const item = allPosts.find(p => p.id === id);
+            if (!item) return;
+
+            const isLost = item.type === "ประกาศของหาย";
+            
+            // 1. ตั้งป้ายประเภทประกาศหลัก
+            const typeBadge = document.getElementById('modal-type-badge');
+            if (isLost) {
+                typeBadge.className = "bg-rose-50 text-rose-500 border border-rose-100 px-3 py-1 rounded-full text-xs font-bold";
+                typeBadge.innerText = "🚨 ประกาศของหาย";
+            } else {
+                typeBadge.className = "bg-emerald-50 text-emerald-600 border border-emerald-100 px-3 py-1 rounded-full text-xs font-bold";
+                typeBadge.innerText = "💡 ประกาศหาเจ้าของ";
+            }
+
+            // 2. หมวดหมู่และชื่อของหาย
+            document.getElementById('modal-category-badge').className = "bg-blue-50 text-blue-600 border border-blue-100 px-3 py-1 rounded-full text-xs font-semibold";
+            document.getElementById('modal-category-badge').innerText = item.category;
+            document.getElementById('modal-title').innerText = item.itemName;
+
+            // 3. กำหนดหัวข้อและข้อมูลตารางรายละเอียด
+            document.getElementById('modal-date-label').innerText = isLost ? 'วันที่คาดว่าตกหาย' : 'วันที่ตรวจพบเจอสิ่งของ';
+            document.getElementById('modal-loc-label').innerText = isLost ? 'สถานที่สันนิษฐานว่าทำตก' : 'สถานที่ที่พบเจอ/เก็บดูแลไว้';
+
+            const rawDate = new Date(item.eventDate);
+            document.getElementById('modal-date').innerText = !isNaN(rawDate.getTime()) 
+                ? rawDate.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                : item.eventDate;
+
+            document.getElementById('modal-location').innerText = item.location;
+            document.getElementById('modal-contact').innerText = item.contactName;
+            document.getElementById('modal-timestamp').innerText = item.timestamp;
+            document.getElementById('modal-details').innerText = item.details || 'ไม่มีข้อมูลบันทึกรายละเอียดเอกลักษณ์พิเศษเพิ่มเติม';
+
+            // 4. บันทึกข้อมูลการโทรและไลน์
+            document.getElementById('modal-phone-btn').href = `tel:${item.phone}`;
+            document.getElementById('modal-phone-text').innerText = item.phone;
+            
+            const lineContainer = document.getElementById('modal-line-container');
+            if (item.lineId && item.lineId !== '-' && item.lineId.trim() !== '') {
+                lineContainer.classList.remove('hidden');
+                document.getElementById('modal-line-text').innerText = item.lineId;
+                lineContainer.onclick = function() {
+                    const textTemp = document.createElement("textarea");
+                    textTemp.value = item.lineId;
+                    document.body.appendChild(textTemp);
+                    textTemp.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textTemp);
+
+                    Swal.fire({
+                        title: 'คัดลอกสำเร็จ!',
+                        text: `คัดลอก LINE ID "${item.lineId}" แล้ว`,
+                        icon: 'success',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                };
+            } else {
+                lineContainer.classList.add('hidden');
+            }
+
+            // 5. เรนเดอร์สไลด์แกลเลอรีรูปภาพความละเอียดสูง
+            const imageContainer = document.getElementById('modal-image-container');
+            const thumbsContainer = document.getElementById('modal-thumbnails');
+            imageContainer.innerHTML = '';
+            thumbsContainer.innerHTML = '';
+
+            let imagesArr = item.images ? item.images.split(',') : [];
+            if (imagesArr.length > 0 && imagesArr[0] !== '') {
+                const mainImg = document.createElement('img');
+                mainImg.src = imagesArr[0];
+                mainImg.id = "modal-main-image";
+                mainImg.className = "w-full h-full object-contain";
+                imageContainer.appendChild(mainImg);
+
+                if (imagesArr.length > 1) {
+                    imagesArr.forEach((imgUrl, index) => {
+                        const thumb = document.createElement('img');
+                        thumb.src = imgUrl;
+                        thumb.className = `w-14 h-14 object-cover rounded-xl border-2 cursor-pointer transition ${index === 0 ? 'border-indigo-600' : 'border-transparent hover:border-slate-300'}`;
+                        thumb.onclick = function() {
+                            document.getElementById('modal-main-image').src = imgUrl;
+                            document.querySelectorAll('#modal-thumbnails img').forEach(t => t.classList.replace('border-indigo-600', 'border-transparent'));
+                            thumb.classList.replace('border-transparent', 'border-indigo-600');
+                        };
+                        thumbsContainer.appendChild(thumb);
+                    });
+                }
+            } else {
+                // หากไม่มีรูปภาพ: แสดงรูปเวกเตอร์ไอคอนตามหมวดหมู่โดยอัตโนมัติ
+                let placeholderSvg = '';
+                if (item.category.includes('โทรศัพท์')) {
+                    placeholderSvg = `<svg class="w-20 h-24 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>`;
+                } else if (item.category.includes('กระเป๋า')) {
+                    placeholderSvg = `<svg class="w-20 h-24 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>`;
+                } else if (item.category.includes('กุญแจ')) {
+                    placeholderSvg = `<svg class="w-20 h-24 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>`;
+                } else {
+                    placeholderSvg = `<svg class="w-20 h-24 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z"/></svg>`;
+                }
+                imageContainer.innerHTML = `<div class="text-center">${placeholderSvg}<p class="text-xs text-slate-400 mt-2">ไม่มีการอัปโหลดรูปภาพ</p></div>`;
+            }
+
+            // 6. ป้ายสถานะปัจจุบัน
+            const statusPill = document.getElementById('modal-status-pill');
+            if (item.status === 'ใช้งาน') {
+                statusPill.className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200 flex items-center gap-1.5";
+                statusPill.innerHTML = `<span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span> ใช้งานอยู่ (เปิดประกาศ)`;
+            } else {
+                statusPill.className = "px-3 py-1 rounded-full text-xs font-bold bg-slate-50 text-slate-500 border border-slate-200 flex items-center gap-1.5";
+                statusPill.innerHTML = `<span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span> ปิดสำเร็จ (เรียบร้อย)`;
+            }
+
+            // 7. จัดระเบียบปุ่มแผงควบคุมหลังบ้าน HR (Action Tray ในป๊อปอัพ)
+            const actionBtnBox = document.getElementById('modal-action-buttons');
+            const toggleStatusBtn = item.status === 'ใช้งาน'
+                ? `<button onclick="updatePostStatusFromModal(${item.id}, 'สำเร็จ')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-3 rounded-xl text-xs transition flex items-center gap-1"><i class="fa-solid fa-check"></i> ทำเครื่องหมายเสร็จสิ้น</button>`
+                : `<button onclick="updatePostStatusFromModal(${item.id}, 'ใช้งาน')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-3 rounded-xl text-xs transition flex items-center gap-1"><i class="fa-solid fa-arrows-rotate"></i> กู้คืนเปิดประกาศ</button>`;
+
+            actionBtnBox.innerHTML = `
+                ${toggleStatusBtn}
+                <button onclick="openEditModalFromModal(${item.id})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-xl text-xs transition flex items-center gap-1"><i class="fa-regular fa-edit"></i> แก้ไข</button>
+                <button onclick="deletePostFromModal(${item.id})" class="bg-rose-500 hover:bg-rose-600 text-white font-bold py-2 px-3 rounded-xl text-xs transition flex items-center gap-1"><i class="fa-regular fa-trash-can"></i> ลบถาวร</button>
+            `;
+
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // ปิดป๊อปอัพแสดงผลรายละเอียด
+        function closeDetailModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // --- สะพานเชื่อมฟังก์ชันการทำคำสั่งจากในหน้าต่าง Modal ---
+        function updatePostStatusFromModal(id, newStatus) {
+            closeDetailModal();
+            updatePostStatus(id, newStatus);
+        }
+
+        function openEditModalFromModal(id) {
+            closeDetailModal();
+            openEditModal(id);
+        }
+
+        function deletePostFromModal(id) {
+            closeDetailModal();
+            deletePostPermanently(id);
+        }
+        // ==========================================
 
         // อัปเดตสถานะประกาศ (ส่งไปแก้ไขช่อง status ในฐานข้อมูล Supabase)
         function updatePostStatus(id, newStatus) {
@@ -462,7 +731,7 @@
 
             Swal.fire({
                 title: "ยืนยันต้องการลบโพสต์ถาวร?",
-                text: "ประวัติของชิ้นนี้จะถูกลบออกจากคลัง Supabase โดยไม่สามารถกู้คืนได้อีก!",
+                text: "ประวัติของชิ้นนี้จะถูกลบออกจากคลัง Supabase ตลอดกาล และไม่สามารถกู้คืนกลับมาได้อีก!",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#ef4444",
@@ -481,7 +750,7 @@
                         body: JSON.stringify({ id: id })
                     })
                     .then(res => {
-                        if (!res.ok) throw new Error("ไม่ได้รับอนุญาตให้สั่งการระบบคลาวด์");
+                        if (!res.ok) throw new Error("ไม่ได้รับอนุญาตให้ส่งคำสั่งลบข้อมูล");
                         return res.json();
                     })
                     .then(data => {
