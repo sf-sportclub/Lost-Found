@@ -19,12 +19,10 @@
             background-color: #f8fafc; 
         }
         
-        /* สไตล์ไล่ระดับสีพื้นหลังสำหรับ Zone บนของหน้าเว็บ */
         .hero-bg { 
             background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); 
         }
         
-        /* ตกแต่งเงาและการเคลื่อนไหวให้การ์ดดูพรีเมียมสไตล์ Dashboard */
         .stats-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -33,7 +31,6 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
         }
 
-        /* กล่องครอบรูปสี่เหลี่ยมผืนผ้าสัดส่วนเหมาะสม */
         .card-img-container { 
             height: 190px; 
             width: 100%; 
@@ -51,7 +48,6 @@
             transform: scale(1.05);
         }
         
-        /* ปรับสไตล์ Scrollbar ให้สวยงามเรียบง่าย */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -70,34 +66,36 @@
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- เปลี่ยนเป็น URL ของ Cloudflare Worker ของคุณ -->
+    <!-- สคริปต์ลิงก์อ้างอิงของ Cloudflare Worker ดั้งเดิมของคุณเจ -->
     <script>
-        const WORKER_API_URL = "https://sflost0found.jaypichayut.workers.dev";
+        const WORKER_API_URL = "https://sflost0found.jaypichayut.workers.dev"; // อัปเดตให้ตรงกับโดเมนหลักของคุณเจ
     </script>
 
-    <!-- Navigation Bar -->
+    <!-- ================================================== -->
+    <!-- 1. แถบเนวิเกชั่นหลัก (Navigation Bar) -->
+    <!-- ================================================== -->
     <nav class="bg-white/95 backdrop-blur shadow-sm sticky top-0 z-40 transition-all border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <!-- โลโก้แบรนด์ -->
+                <!-- โลโก้โครงการ -->
                 <div class="flex items-center cursor-pointer space-x-2.5" onclick="resetAndHome()">
                     <div class="bg-blue-600 text-white p-2 rounded-xl shadow-md shadow-blue-200">
                         <i class="fa-solid fa-magnifying-glass text-lg"></i>
                     </div>
                     <div>
-                        <span class="font-bold text-lg md:text-xl tracking-wide text-slate-900 block leading-tight">SF Lost & Found</span>
-                        <span class="text-xs text-blue-600 font-medium block">ศูนย์สืบค้นของหายและเก็บของได้</span>
+                        <span class="font-bold text-base md:text-xl tracking-wide text-slate-900 block leading-tight">SF Lost & Found</span>
+                        <span class="text-[10px] md:text-xs text-blue-600 font-medium block">ศูนย์สืบค้นของหายและเก็บของได้</span>
                     </div>
                 </div>
                 
-                <!-- ปุ่มลัดสำหรับแจ้งโพสต์ด่วน -->
-                <div class="flex items-center space-x-3">
-                    <button onclick="openFormModal('lost')" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-1.5 border border-blue-200">
-                        <i class="fa-solid fa-file-circle-exclamation text-base"></i>
+                <!-- ปุ่มลัดแจ้งโพสต์ด่วน -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="openFormModal('lost')" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition flex items-center gap-1 border border-blue-200">
+                        <i class="fa-solid fa-file-circle-exclamation text-sm"></i>
                         <span class="hidden sm:inline">แจ้งของหาย</span>
                     </button>
-                    <button onclick="openFormModal('found')" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-1.5 border border-emerald-200">
-                        <i class="fa-solid fa-hand-holding-heart text-base"></i>
+                    <button onclick="openFormModal('found')" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition flex items-center gap-1 border border-emerald-200">
+                        <i class="fa-solid fa-hand-holding-heart text-sm"></i>
                         <span class="hidden sm:inline">แจ้งเก็บของได้</span>
                     </button>
                 </div>
@@ -105,104 +103,108 @@
         </div>
     </nav>
 
-    <!-- Hero Header Zone -->
+    <!-- ================================================== -->
+    <!-- 2. ฮีโร่เฮดเดอร์ (Hero Header Zone) -->
+    <!-- ================================================== -->
     <div class="hero-bg text-white pt-10 pb-20 px-4 text-center relative overflow-hidden">
-        <!-- เอฟเฟกต์แสงตกแต่งด้านหลัง -->
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.3),transparent_45%)]"></div>
-        
         <div class="max-w-4xl mx-auto relative z-10">
-            <h1 class="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-3 tracking-tight">ระบบติดตามประสานงานของหาย</h1>
-            <p class="text-blue-100 text-sm md:text-base max-w-lg mx-auto font-light mb-8">
+            <h1 class="text-2xl md:text-4xl lg:text-5xl font-extrabold mb-3 tracking-tight">ระบบติดตามประสานงานของหาย</h1>
+            <p class="text-blue-100 text-xs md:text-base max-w-lg mx-auto font-light mb-8">
                 ช่วยกันส่งต่อเบาะแส ตามหา และส่งคืนสัมภาระหรือทรัพย์สินที่สูญหายกลับคืนสู่เจ้าของที่แท้จริงอย่างรวดเร็วและปลอดภัย
             </p>
             <div class="flex flex-wrap justify-center gap-3">
-                <button onclick="openFormModal('lost')" class="bg-white text-blue-700 hover:bg-slate-50 px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-900/20 transition flex items-center gap-2">
-                    <span class="flex h-2.5 w-2.5 relative">
+                <button onclick="openFormModal('lost')" class="bg-white text-blue-700 hover:bg-slate-50 px-5 py-3 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-blue-900/20 transition flex items-center gap-2">
+                    <span class="flex h-2 w-2 relative">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                     </span>
                     แจ้งของหาย (Lost)
                 </button>
-                <button onclick="openFormModal('found')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-emerald-900/25 transition flex items-center gap-2">
-                    <i class="fa-solid fa-circle-check text-base"></i>
+                <button onclick="openFormModal('found')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-emerald-900/25 transition flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-sm md:text-base"></i>
                     แจ้งเก็บของได้ (Found)
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- ส่วนพื้นที่หลัก Main Content -->
+    <!-- ================================================== -->
+    <!-- 3. ส่วนพื้นที่หลักแสดงข้อมูล (Main Content) -->
+    <!-- ================================================== -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 mb-16 relative z-10 flex-grow w-full">
-        
-        <!-- Dashboard สถิติ 4 ใบ -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <!-- การ์ด 1: ของหายทั้งหมด -->
-            <div class="stats-card bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-100/80 flex flex-col justify-between">
+        <!-- แดชบอร์ดสรุปสถิติมุมมองโมเดิร์น -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8">
+            <div class="stats-card bg-white rounded-2xl p-4 shadow-sm border border-slate-100/80 flex flex-col justify-between">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs md:text-sm font-medium text-slate-500">📦 ของหายทั้งหมด</span>
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600" id="stat-lost-today-change">กำลังตามหาอยู่</span>
+                    <span class="text-xs font-medium text-slate-500">📦 ของหายทั้งหมด</span>
+                    <span class="hidden md:inline text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">กำลังตามหา</span>
                 </div>
-                <div class="mt-4">
-                    <span class="text-2xl md:text-4.5xl font-bold text-slate-900 tracking-tight" id="stat-lost-today">0</span>
-                    <span class="text-xs text-slate-400 block mt-0.5" id="stat-lost-sub">รายการกำลังตามหา</span>
+                <div class="mt-2 md:mt-4">
+                    <span class="text-xl md:text-4.5xl font-bold text-slate-900 tracking-tight" id="stat-lost-today">0</span>
+                    <span class="text-[10px] text-slate-400 block mt-0.5">รายการกำลังตามหา</span>
                 </div>
             </div>
 
-            <!-- การ์ด 2: ของที่พบ -->
-            <div class="stats-card bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-100/80 flex flex-col justify-between">
+            <div class="stats-card bg-white rounded-2xl p-4 shadow-sm border border-slate-100/80 flex flex-col justify-between">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs md:text-sm font-medium text-slate-500">🎁 ของที่พบ</span>
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600" id="stat-found-change">รอเจ้าของติดต่อ</span>
+                    <span class="text-xs font-medium text-slate-500">🎁 ของที่พบ</span>
+                    <span class="hidden md:inline text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600">รอเคลม</span>
                 </div>
-                <div class="mt-4">
-                    <span class="text-2xl md:text-4.5xl font-bold text-slate-900 tracking-tight" id="stat-found">0</span>
-                    <span class="text-xs text-slate-400 block mt-0.5" id="stat-found-sub">กำลังรอเจ้าของมาเคลม</span>
+                <div class="mt-2 md:mt-4">
+                    <span class="text-xl md:text-4.5xl font-bold text-slate-900 tracking-tight" id="stat-found">0</span>
+                    <span class="text-[10px] text-slate-400 block mt-0.5">กำลังรอเจ้าของติดต่อ</span>
                 </div>
             </div>
 
-            <!-- การ์ด 3: คืนสำเร็จ -->
-            <div class="stats-card bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-100/80 flex flex-col justify-between">
+            <div class="stats-card bg-white rounded-2xl p-4 shadow-sm border border-slate-100/80 flex flex-col justify-between">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs md:text-sm font-medium text-slate-500">✅ คืนสำเร็จ</span>
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600" id="stat-success-rate">0% Success</span>
+                    <span class="text-xs font-medium text-slate-500">✅ คืนสำเร็จ</span>
+                    <span class="hidden md:inline text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600" id="stat-success-rate">0% Rate</span>
                 </div>
-                <div class="mt-4">
-                    <span class="text-2xl md:text-4.5xl font-bold text-slate-900 tracking-tight" id="stat-success">0</span>
-                    <span class="text-xs text-slate-400 block mt-0.5">ของส่งกลับคืนมือผู้เป็นเจ้าของ</span>
+                <div class="mt-2 md:mt-4">
+                    <span class="text-xl md:text-4.5xl font-bold text-slate-900 tracking-tight" id="stat-success">0</span>
+                    <span class="text-[10px] text-slate-400 block mt-0.5">ส่งคืนมือเจ้าของแล้ว</span>
                 </div>
             </div>
 
-            <!-- การ์ด 4: รอดำเนินการ -->
-            <div class="stats-card bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-100/80 flex flex-col justify-between">
+            <div class="stats-card bg-white rounded-2xl p-4 shadow-sm border border-slate-100/80 flex flex-col justify-between">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs md:text-sm font-medium text-slate-500">👀 รอดำเนินการ</span>
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-600" id="stat-pending-label">กำลังรอเบาะแส</span>
+                    <span class="text-xs font-medium text-slate-500">👀 รอดำเนินการ</span>
+                    <span class="hidden md:inline text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-600">กำลังติดตาม</span>
                 </div>
-                <div class="mt-4">
-                    <span class="text-2xl md:text-4.5xl font-bold text-slate-900 tracking-tight" id="stat-pending">0</span>
-                    <span class="text-xs text-slate-400 block mt-0.5">รวมประกาศที่ยังเคลื่อนไหวอยู่</span>
+                <div class="mt-2 md:mt-4">
+                    <span class="text-xl md:text-4.5xl font-bold text-slate-900 tracking-tight" id="stat-pending">0</span>
+                    <span class="text-[10px] text-slate-400 block mt-0.5">ประกาศทั้งหมดที่เปิดอยู่</span>
                 </div>
             </div>
         </div>
 
-        <!-- ส่วนแถบค้นหารวม (Search Bar) -->
+        <!-- แถบค้นหาอัจฉริยะ (Responsive Search Bar) -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-3 mb-6 flex flex-col md:flex-row items-center gap-2">
             <div class="relative w-full flex-grow">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                     <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
                 </span>
-                <input type="text" id="search-input" oninput="applyFilters()" placeholder="ค้นหาสิ่งของ เช่น iPhone, กระเป๋า, กุญแจ, บัตรประชาชน..." class="block w-full pl-10 pr-4 py-3 bg-slate-50 text-slate-900 placeholder-slate-400 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white border-none transition-all duration-200">
+                <input type="text" id="search-input" oninput="applyFilters()" placeholder="ค้นหา เช่น iPhone, กระเป๋า, กุญแจ, บัตรประชาชน..." class="block w-full pl-10 pr-4 py-3 bg-slate-50 text-slate-900 placeholder-slate-400 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white border-none transition-all duration-200">
             </div>
-            <button onclick="applyFilters()" class="w-full md:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-colors duration-200 flex items-center justify-center gap-2">
-                ค้นหา
-            </button>
+            
+            <div class="flex items-center gap-2 w-full md:w-auto">
+                <!-- ปุ่มสับเปิด/ปิดหน้าต่างตัวกรองด่วน สำหรับหน้าจอมือถือ -->
+                <button onclick="toggleMobileFilters()" class="flex-1 lg:hidden bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 px-4 rounded-xl text-sm font-semibold transition duration-150 flex items-center justify-center gap-1.5 border border-slate-200">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>ตัวกรอง</span>
+                </button>
+                <button onclick="applyFilters()" class="flex-1 md:flex-initial px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-colors duration-200 flex items-center justify-center gap-2">
+                    ค้นหา
+                </button>
+            </div>
         </div>
 
-        <!-- Layout สองคอลัมน์ (ซ้าย: ตัวกรอง Filter | ขวา: รายการประกาศทั้งหมด) -->
+        <!-- โครงสร้าง Layout (ซ้าย: ตัวกรอง Filter | ขวา: รายการบอร์ดประกาศ) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
-            <!-- คอลัมน์ซ้าย: แผงควบคุมตัวกรอง (Filter Sidebar) -->
-            <aside class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 sticky top-20">
+            <!-- คอลัมน์ตัวกรอง (Filter Sidebar): แก้ไขปัญหา Sticky ทับจอโดยกำหนด lg:sticky เฉพาะจอคอมฯ -->
+            <aside id="filter-sidebar" class="hidden lg:block lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:sticky lg:top-24 transition-all duration-300 z-30">
                 <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-100">
                     <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
                         <i class="fa-solid fa-sliders text-blue-500"></i> ตัวกรองข้อมูล
@@ -236,146 +238,136 @@
                         </select>
                     </div>
 
-                    <!-- กรองสถานที่ / สาขา -->
+                    <!-- กรองสถานที่ -->
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">สถานที่ / สาขา</label>
                         <select id="filter-location" onchange="applyFilters()" class="w-full bg-slate-50 border border-slate-100 text-slate-700 py-2.5 px-3 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all">
-                            <option value="">สถานที่ / สาขา</option>
+                            <option value="">ทุกสถานที่ / สาขา</option>
                         </select>
                     </div>
 
                     <!-- กรองวันที่เกิดเหตุ -->
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">ระบุวันที่เกิดเหตุ</label>
-                        <div class="relative">
-                            <input type="date" id="filter-date" onchange="applyFilters()" class="w-full bg-slate-50 border border-slate-100 text-slate-700 py-2.5 px-3 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all">
-                        </div>
+                        <input type="date" id="filter-date" onchange="applyFilters()" class="w-full bg-slate-50 border border-slate-100 text-slate-700 py-2.5 px-3 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all">
                     </div>
                 </div>
 
-                <!-- ข้อมูลแนะแนวด่วน -->
-                <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-400 space-y-2">
+                <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-400">
                     <p class="flex items-start gap-1.5">
                         <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
-                        <span>เมื่อเจ้าของได้รับของคืนแล้ว โพสต์จะถูกปิดและบันทึกสถิติสำเร็จทันที</span>
+                        <span>เมื่อของหายได้รับคืนหรือปิดเคสสำเร็จ การ์ดโพสต์จะถูกย้ายเข้าสู่สถิติทันที</span>
                     </p>
                 </div>
             </aside>
 
-            <!-- คอลัมน์ขวา: รายชื่อประกาศ (Latest Posts list) -->
-            <section class="lg:col-span-9">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            <!-- คอลัมน์รายชื่อโพสต์ฟีดประกาศ -->
+            <section class="lg:col-span-9 w-full">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 md:p-6">
                     <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <h2 class="text-lg md:text-xl font-bold text-slate-900 flex items-center gap-2">
                             <i class="fa-solid fa-list text-slate-400"></i> รายการประกาศล่าสุด
                         </h2>
                         <span id="posts-count-badge" class="bg-blue-50 text-blue-600 text-xs font-bold px-3 py-1 rounded-full border border-blue-100">กำลังโหลดรายการ...</span>
                     </div>
 
-                    <!-- สถานะกำลังโหลดข้อมูล (Loading State) -->
+                    <!-- Loading State -->
                     <div id="loading-home" class="text-center py-16 text-slate-500">
                         <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600 mb-3 animate-spin">
                             <i class="fa-solid fa-spinner text-2xl"></i>
                         </div>
                         <p class="font-medium text-slate-700">กำลังอ่านฐานข้อมูลระบบคลาวด์...</p>
-                        <p class="text-xs text-slate-400 mt-1">กรุณารอสักครู่เพื่อแสดงผลสถิติล่าสุด</p>
+                        <p class="text-xs text-slate-400 mt-1">กรุณารอสักครู่เพื่อประสานงานระบบ</p>
                     </div>
 
-                    <!-- กล่องใส่ข้อมูลโพสต์ทั้งหมด -->
-                    <div id="feed-all" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden"></div>
+                    <!-- Feed Grid -->
+                    <div id="feed-all" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 hidden"></div>
                     
-                    <!-- เมื่อค้นหาไม่พบข้อมูล (No Data State) -->
-                    <div id="no-data-state" class="hidden text-center py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                        <div class="bg-slate-100 text-slate-400 h-14 w-14 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fa-solid fa-box-open text-2xl"></i>
+                    <!-- Empty State -->
+                    <div id="no-data-state" class="hidden text-center py-16 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                        <div class="bg-slate-100 text-slate-400 h-12 w-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa-solid fa-box-open text-xl"></i>
                         </div>
-                        <h3 class="text-base font-bold text-slate-700">ไม่พบประกาศที่ค้นหา</h3>
-                        <p class="text-slate-400 text-sm mt-1 max-w-sm mx-auto">ลองแก้ไขข้อความค้นหา เปลี่ยนแปลงหมวดหมู่ หรือกดล้างตัวกรองเพื่อเรียกดูข้อมูลทั้งหมดอีกครั้ง</p>
+                        <h3 class="text-sm font-bold text-slate-700">ไม่พบประกาศที่ตามหา</h3>
+                        <p class="text-slate-400 text-xs mt-1 max-w-xs mx-auto">ลองเปลี่ยนแปลงตัวอักษรค้นหา หรือกดเคลียร์ตัวกรองข้อมูลด้านซ้ายเพื่อสืบค้นอีกรอบครับ</p>
                     </div>
                 </div>
             </section>
-
         </div>
     </main>
 
-    <!-- ================= MODAL: หน้าต่างดูรายละเอียดขนาดใหญ่ (Details Pop-up) ================= -->
+    <!-- ================================================== -->
+    <!-- 4. หน้าต่างดูรายละเอียดป๊อปอัพพรีเมียม (Detail Modal) -->
+    <!-- ================================================== -->
     <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <!-- ส่วนหัว Modal -->
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <div class="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <div class="flex items-center gap-2">
                     <span id="modal-type-badge"></span>
                     <span id="modal-category-badge"></span>
                 </div>
-                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-200 p-2 rounded-full transition-colors">
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-200 p-1.5 rounded-full transition-colors">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
             
-            <!-- ส่วนเนื้อหาที่ Scroll ได้ -->
-            <div class="overflow-y-auto p-6 flex-grow space-y-6">
-                <!-- แกลเลอรีรูปภาพของโพสต์ -->
+            <div class="overflow-y-auto p-5 md:p-6 flex-grow space-y-5">
                 <div>
-                    <div id="modal-image-container" class="w-full bg-slate-100 rounded-2xl flex items-center justify-center overflow-hidden relative" style="height: 320px;">
-                        <!-- รูปขนาดใหญ่จะถูกใส่ตรงนี้ผ่าน JS -->
-                    </div>
-                    <!-- รูปภาพย่อยๆ Thumbnail (ถ้ามีรูปมากกว่า 1 รูป) -->
+                    <div id="modal-image-container" class="w-full bg-slate-100 rounded-2xl flex items-center justify-center overflow-hidden relative border border-slate-150" style="height: 260px;"></div>
                     <div id="modal-thumbnails" class="flex flex-wrap gap-2 mt-3"></div>
                 </div>
 
-                <!-- ข้อมูลรายละเอียดของสิ่งของ -->
                 <div class="space-y-4">
                     <div>
-                        <span class="text-xs text-slate-400 font-bold uppercase tracking-wider block">ชื่อสิ่งของ</span>
-                        <h2 id="modal-title" class="text-2xl font-bold text-slate-900 mt-0.5"></h2>
+                        <span class="text-xs text-slate-400 font-bold uppercase block">ชื่อสิ่งของ</span>
+                        <h2 id="modal-title" class="text-xl md:text-2xl font-bold text-slate-900 mt-0.5"></h2>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                        <div class="flex items-start gap-2.5">
-                            <div class="p-2 bg-blue-50 text-blue-600 rounded-xl mt-0.5"><i class="fa-regular fa-calendar-days text-sm"></i></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div class="flex items-start gap-2">
+                            <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg mt-0.5"><i class="fa-regular fa-calendar-days text-xs"></i></div>
                             <div>
-                                <span class="text-xs text-slate-400 block" id="modal-date-label">วันที่</span>
-                                <span id="modal-date" class="text-sm font-semibold text-slate-800"></span>
+                                <span class="text-[10px] text-slate-400 block" id="modal-date-label">วันที่</span>
+                                <span id="modal-date" class="text-xs md:text-sm font-semibold text-slate-800"></span>
                             </div>
                         </div>
-                        <div class="flex items-start gap-2.5">
-                            <div class="p-2 bg-red-50 text-red-500 rounded-xl mt-0.5"><i class="fa-solid fa-map-pin text-sm"></i></div>
+                        <div class="flex items-start gap-2">
+                            <div class="p-1.5 bg-red-50 text-red-500 rounded-lg mt-0.5"><i class="fa-solid fa-map-pin text-xs"></i></div>
                             <div>
-                                <span class="text-xs text-slate-400 block" id="modal-loc-label">สถานที่</span>
-                                <span id="modal-location" class="text-sm font-semibold text-slate-800"></span>
+                                <span class="text-[10px] text-slate-400 block" id="modal-loc-label">สถานที่</span>
+                                <span id="modal-location" class="text-xs md:text-sm font-semibold text-slate-800"></span>
                             </div>
                         </div>
-                        <div class="flex items-start gap-2.5">
-                            <div class="p-2 bg-purple-50 text-purple-600 rounded-xl mt-0.5"><i class="fa-solid fa-user text-sm"></i></div>
+                        <div class="flex items-start gap-2">
+                            <div class="p-1.5 bg-purple-50 text-purple-600 rounded-lg mt-0.5"><i class="fa-solid fa-user text-xs"></i></div>
                             <div>
-                                <span class="text-xs text-slate-400 block">ผู้ประกาศแจ้ง</span>
-                                <span id="modal-contact" class="text-sm font-semibold text-slate-800"></span>
+                                <span class="text-[10px] text-slate-400 block">ผู้ประกาศแจ้ง</span>
+                                <span id="modal-contact" class="text-xs md:text-sm font-semibold text-slate-800"></span>
                             </div>
                         </div>
-                        <div class="flex items-start gap-2.5">
-                            <div class="p-2 bg-sky-50 text-sky-600 rounded-xl mt-0.5"><i class="fa-solid fa-clock text-sm"></i></div>
+                        <div class="flex items-start gap-2">
+                            <div class="p-1.5 bg-sky-50 text-sky-600 rounded-lg mt-0.5"><i class="fa-solid fa-clock text-xs"></i></div>
                             <div>
-                                <span class="text-xs text-slate-400 block">เวลาลงระบบ</span>
-                                <span id="modal-timestamp" class="text-sm font-semibold text-slate-800"></span>
+                                <span class="text-[10px] text-slate-400 block">เวลาลงระบบ</span>
+                                <span id="modal-timestamp" class="text-xs md:text-sm font-semibold text-slate-800"></span>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <span class="text-xs text-slate-400 font-bold uppercase tracking-wider block">รายละเอียดประกาศเพิ่มเติม</span>
+                        <span class="text-xs text-slate-400 font-bold uppercase block">รายละเอียดประกาศเพิ่มเติม</span>
                         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 mt-1">
-                            <p id="modal-details" class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">-</p>
+                            <p id="modal-details" class="text-xs md:text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">-</p>
                         </div>
                     </div>
 
-                    <!-- ข้อมูลการติดต่อ -->
-                    <div class="border-t border-slate-100 pt-5 space-y-3">
-                        <h4 class="font-bold text-slate-900 text-sm">ช่องทางติดต่อด่วน</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <a id="modal-phone-btn" href="#" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm transition shadow-md shadow-blue-500/10">
+                    <div class="border-t border-slate-100 pt-4 space-y-3">
+                        <h4 class="font-bold text-slate-900 text-xs md:text-sm">ช่องทางติดต่อประสานงาน</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <a id="modal-phone-btn" href="#" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 text-xs md:text-sm transition shadow-sm">
                                 <i class="fa-solid fa-phone"></i> โทร: <span id="modal-phone-text"></span>
                             </a>
-                            <div id="modal-line-container" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm cursor-pointer transition shadow-md shadow-emerald-500/10">
+                            <div id="modal-line-container" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 text-xs md:text-sm cursor-pointer transition">
                                 <i class="fa-regular fa-comment-dots"></i> LINE ID: <span id="modal-line-text">-</span>
                             </div>
                         </div>
@@ -383,56 +375,50 @@
                 </div>
             </div>
             
-            <!-- ส่วนท้าย Modal ปุ่มอัปเดต / ปิด -->
-            <div id="modal-footer-actions" class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-wrap gap-2 justify-between items-center">
+            <div id="modal-footer-actions" class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex flex-wrap gap-2 justify-between items-center">
                 <span id="modal-status-pill"></span>
-                <div class="flex items-center gap-2" id="modal-action-buttons">
-                    <!-- จะถูกเติมข้อมูลปุ่ม "คืนเจ้าของ / สำเร็จ" โดย JS -->
-                </div>
+                <div class="flex items-center gap-2" id="modal-action-buttons"></div>
             </div>
         </div>
     </div>
 
-
-    <!-- ================= MODAL: แบบฟอร์มกรอกบันทึกข้อมูลใหม่ (Form Pop-up) ================= -->
+    <!-- ================================================== -->
+    <!-- 5. แบบฟอร์มเพิ่มโพสต์ประกาศใหม่ (Form Modal Popup) -->
+    <!-- ================================================== -->
     <div id="form-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
-            
-            <!-- ส่วนหัวแบบฟอร์ม -->
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center" id="form-header-bar">
+        <div class="bg-white rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center" id="form-header-bar">
                 <div class="flex items-center gap-2">
-                    <span class="text-2xl" id="form-icon">📕</span>
-                    <h2 class="text-xl font-bold text-slate-900" id="form-title">แบบฟอร์มแจ้งประกาศ</h2>
+                    <span class="text-xl" id="form-icon">📕</span>
+                    <h2 class="text-base md:text-lg font-bold text-slate-900" id="form-title">แบบฟอร์มแจ้งประกาศ</h2>
                 </div>
-                <button onclick="closeFormModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-200 p-2 rounded-full transition-colors">
+                <button onclick="closeFormModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-200 p-1.5 rounded-full transition-colors">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <!-- ส่วนกรอกฟอร์ม -->
-            <form id="active-form" onsubmit="submitData(event)" class="overflow-y-auto p-6 flex-grow space-y-4">
+            <form id="active-form" onsubmit="submitData(event)" class="overflow-y-auto p-5 md:p-6 flex-grow space-y-4">
                 <input type="hidden" id="form-type-input">
                 
-                <!-- อัปโหลดรูปภาพ -->
+                <!-- อัปโหลดภาพ -->
                 <div class="bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-200 hover:border-blue-400 transition-colors">
-                    <label class="block text-slate-700 font-bold text-sm mb-1.5 flex items-center gap-1.5">
+                    <label class="block text-slate-700 font-bold text-xs md:text-sm mb-1.5 flex items-center gap-1.5">
                         <i class="fa-solid fa-image text-blue-500"></i> อัปโหลดรูปภาพ (สูงสุด 5 รูป)
                     </label>
-                    <input type="file" id="form-images" multiple accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" onchange="previewImages(this)">
-                    <p class="text-[11px] text-slate-400 mt-2">คำแนะนำ: เลือกได้พร้อมกันหลายภาพ และระบบจะดึงรูปแรกเป็นภาพหน้าปกหลักของประกาศ</p>
-                    <div id="form-preview" class="flex flex-wrap gap-2.5 mt-3"></div>
+                    <input type="file" id="form-images" multiple accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" onchange="previewImages(this)">
+                    <div id="form-preview" class="flex flex-wrap gap-2 mt-3"></div>
                 </div>
 
                 <!-- กรอกข้อมูลสำคัญ -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div class="col-span-1 md:col-span-2">
-                        <label class="block text-slate-700 font-semibold text-sm mb-1">ชื่อสิ่งของหรือทรัพย์สิน *</label>
-                        <input type="text" id="form-itemName" placeholder="เช่น iPhone 16 Pro สีดำ, กระเป๋าแบรนด์ Coach ลายดอกไม้" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 py-2.5 px-3.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border-blue-500 transition-all">
+                        <label class="block text-slate-700 font-semibold text-xs mb-1">ชื่อสิ่งของหรือสัมภาระ *</label>
+                        <input type="text" id="form-itemName" placeholder="เช่น iPhone 16 Pro สีดำพร้อมเคสการ์ตูน" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 py-2.5 px-3 rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border-blue-500">
                     </div>
                     
                     <div>
-                        <label class="block text-slate-700 font-semibold text-sm mb-1">หมวดหมู่ของสิ่งของ *</label>
-                        <select id="form-category" required class="w-full bg-slate-50 border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border-blue-500 transition-all">
+                        <label class="block text-slate-700 font-semibold text-xs mb-1">หมวดหมู่ *</label>
+                        <select id="form-category" required class="w-full bg-slate-50 border border-slate-200 text-slate-700 py-2.5 px-3 rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border-blue-500">
                             <option value="">เลือกหมวดหมู่</option>
                             <option value="📱 โทรศัพท์มือถือ">📱 โทรศัพท์มือถือ</option>
                             <option value="👜 กระเป๋า">👜 กระเป๋า/กระเป๋าสตางค์</option>
@@ -443,64 +429,66 @@
                     </div>
 
                     <div>
-                        <label id="form-date-label-el" class="block text-slate-700 font-semibold text-sm mb-1">วันที่หาย *</label>
-                        <input type="date" id="form-date" required class="w-full bg-slate-50 border border-slate-200 text-slate-700 py-2.5 px-3.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border-blue-500 transition-all">
+                        <label id="form-date-label-el" class="block text-slate-700 font-semibold text-xs mb-1">วันที่หาย *</label>
+                        <input type="date" id="form-date" required class="w-full bg-slate-50 border border-slate-200 text-slate-700 py-2 px-3 rounded-xl text-xs md:text-sm">
                     </div>
 
                     <div class="col-span-1 md:col-span-2">
-                        <label id="form-loc-label-el" class="block text-slate-700 font-semibold text-sm mb-1">สถานที่พบเจอหรือที่ทำหาย *</label>
-                        <input type="text" id="form-location" placeholder="ระบุตำแหน่ง อาคาร จุดบริการ หรือพิกัดร้านค้า เช่น ชั้น 7 โซนบี" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 py-2.5 px-3.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border-blue-500 transition-all">
+                        <label id="form-loc-label-el" class="block text-slate-700 font-semibold text-xs mb-1">สถานที่ *</label>
+                        <input type="text" id="form-location" placeholder="ระบุตำแหน่ง อาคาร พิกัด เช่น แพนทรีชั้น 2 แถวตู้เย็น" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 py-2.5 px-3 rounded-xl text-xs md:text-sm">
                     </div>
 
                     <div class="col-span-1 md:col-span-2">
-                        <label class="block text-slate-700 font-semibold text-sm mb-1">รายละเอียดทางกายภาพ (เพิ่มเติม)</label>
-                        <textarea id="form-details" rows="3" placeholder="ระบุเอกลักษณ์พิเศษ เช่น สติกเกอร์หลังเคส รอยขีดข่วน รหัสอ้างอิง หรือลักษณะจุดพังยับ" class="w-full bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 py-2.5 px-3.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border-blue-500 transition-all resize-none"></textarea>
+                        <label class="block text-slate-700 font-semibold text-xs mb-1">รายละเอียดลักษณะเด่น (เพิ่มเติม)</label>
+                        <textarea id="form-details" rows="2" placeholder="ระบุลายสติกเกอร์ รอยขีดข่วน หรือรอยบิ่นเฉพาะเจาะจง..." class="w-full bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 py-2 px-3 rounded-xl text-xs md:text-sm resize-none"></textarea>
                     </div>
 
                     <div class="col-span-1 md:col-span-2 border-t border-slate-100 pt-3">
-                        <span class="text-xs text-blue-600 font-bold uppercase tracking-wider block mb-2">ข้อมูลผู้ติดต่อประสานงาน</span>
+                        <span class="text-xs text-blue-600 font-bold uppercase tracking-wider block">ช่องทางการติดต่อประสานงาน</span>
                     </div>
 
                     <div>
-                        <label class="block text-slate-700 font-semibold text-sm mb-1">ชื่อผู้ติดต่อ *</label>
-                        <input type="text" id="form-contactName" placeholder="เช่น นายสมคิด ใฝ่ดี" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 py-2.5 px-3.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border-blue-500 transition-all">
+                        <label class="block text-slate-700 font-semibold text-xs mb-1">ชื่อผู้แจ้งติดต่อ *</label>
+                        <input type="text" id="form-contactName" placeholder="เช่น นายประเสริฐ ดียิ่ง" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2.5 px-3 rounded-xl text-xs md:text-sm">
                     </div>
 
                     <div>
-                        <label class="block text-slate-700 font-semibold text-sm mb-1">เบอร์โทรศัพท์ติดต่อกลับ *</label>
-                        <input type="tel" id="form-phone" placeholder="เช่น 0812345678" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 py-2.5 px-3.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border-blue-500 transition-all">
+                        <label class="block text-slate-700 font-semibold text-xs mb-1">เบอร์โทรศัพท์ติดต่อกลับ *</label>
+                        <input type="tel" id="form-phone" placeholder="เช่น 0891234567" required class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2.5 px-3 rounded-xl text-xs md:text-sm">
                     </div>
 
                     <div class="col-span-1 md:col-span-2">
-                        <label class="block text-slate-700 font-semibold text-sm mb-1">LINE ID (ถ้ามี)</label>
-                        <input type="text" id="form-line" placeholder="เช่น line_id_123" class="w-full bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 py-2.5 px-3.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border-blue-500 transition-all">
+                        <label class="block text-slate-700 font-semibold text-xs mb-1">LINE ID (ถ้ามี)</label>
+                        <input type="text" id="form-line" placeholder="เช่น line_id_sf" class="w-full bg-slate-50 border border-slate-200 text-slate-900 py-2.5 px-3 rounded-xl text-xs md:text-sm">
                     </div>
                 </div>
 
                 <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
-                    <button type="button" onclick="closeFormModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-sm transition">ยกเลิก</button>
-                    <button type="submit" id="form-submit-btn" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-md transition">ลงข้อมูลเข้าระบบ</button>
+                    <button type="button" onclick="closeFormModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs md:text-sm transition">ยกเลิก</button>
+                    <button type="submit" id="form-submit-btn" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs md:text-sm transition">ลงข้อมูลเข้าระบบ</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Footer คัดลอกสงวนลิขสิทธิ์ -->
-    <footer class="bg-white border-t border-slate-100 py-6 text-center text-xs text-slate-400 mt-auto">
-        <p>© 2026 SF Lost & Found. ระบบสารสนเทศประสานงานของเสียหายบนคลาวด์ Workers + Supabase</p>
+    <!-- ฟูตเตอร์ล่างสุด -->
+    <footer class="bg-white border-t border-slate-100 py-6 text-center text-[10px] md:text-xs text-slate-400 mt-auto">
+        <p>© 2026 SF Lost & Found. ระบบประสานงานบอร์ดของสูญหายบน Edge คลาวด์</p>
     </footer>
 
+    <!-- ================================================== -->
+    <!-- 6. ส่วนประมวลผล Javascript (Controller) -->
+    <!-- ================================================== -->
     <script>
         let allPostsData = [];
         let uploadedImagesBase64 = [];
 
-        // ทำงานเมื่อดาวน์โหลดหน้าต่างเบราว์เซอร์เสร็จสิ้น
         window.onload = function() {
             fetchPosts();
             setupDeepLinking();
         };
 
-        // ตรวจสอบ Deep Linking (เช่น กรณีแชร์ลิงก์แล้วดึงไอดีมาเปิด Modal อัตโนมัติ)
+        // ตั้งระบบตรวจลิงก์ตรงแชร์เพื่อพรีวิวการ์ด
         function setupDeepLinking() {
             const urlParams = new URLSearchParams(window.location.search);
             const itemId = urlParams.get('id');
@@ -509,14 +497,21 @@
             }
         }
 
-        // รีเซ็ตการกรองแล้วดึงข้อมูลหน้าแรก
+        // รีเซ็ตล้างฟิลเตอร์ทั้งหมดเพื่อเริ่มค้นหาใหม่
         function resetAndHome() {
             clearAllFilters();
             applyFilters();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // ดึงข้อมูลโพสต์ทั้งหมดจาก Supabase ผ่าน Cloudflare Worker API
+        // ระบบสับแสดง/พับเก็บ แผงตัวกรองข้อมูลความละเอียดบนมือถือ
+        function toggleMobileFilters() {
+            const sidebar = document.getElementById('filter-sidebar');
+            // ทำการ toggle คลาส hidden บนมือถือ
+            sidebar.classList.toggle('hidden');
+        }
+
+        // ดึงรายการประวัติประกาศทั้งหมดจาก Worker
         function fetchPosts() {
             document.getElementById('loading-home').classList.remove('hidden');
             document.getElementById('feed-all').classList.add('hidden');
@@ -524,7 +519,7 @@
 
             fetch(`${WORKER_API_URL}/api/posts`)
                 .then(response => {
-                    if (!response.ok) throw new Error("Network response was not ok");
+                    if (!response.ok) throw new Error("ดึงข้อมูลเครือข่ายล้มเหลว");
                     return response.json();
                 })
                 .then(data => {
@@ -533,7 +528,6 @@
                     populateLocationFilter();
                     applyFilters();
                     
-                    // เช็กเพื่อเปิด Deep Link Modal ย้อนหลัง
                     if (window.pendingDeepLinkId) {
                         const foundPost = allPostsData.find(p => p.id == window.pendingDeepLinkId);
                         if (foundPost) {
@@ -543,50 +537,44 @@
                     }
                 })
                 .catch(error => {
-                    console.error("Error fetching data:", error);
+                    console.error("Error fetching:", error);
                     document.getElementById('loading-home').innerHTML = `
-                        <div class="text-rose-500 text-center">
-                            <i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i>
-                            <p class="font-bold">เชื่อมต่อฐานข้อมูลล้มเหลว</p>
-                            <p class="text-xs text-slate-400 mt-1">${error.toString()}</p>
+                        <div class="text-rose-500 text-center py-6">
+                            <i class="fa-solid fa-triangle-exclamation text-2xl mb-1"></i>
+                            <p class="font-bold text-sm">ดึงข้อมูลล้มเหลว</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${error.toString()}</p>
                         </div>
                     `;
                 });
         }
 
-        // วิเคราะห์และประมวลผลสถิติจากฐานข้อมูล
+        // คํานวณจัดสถิติรายงานขึ้นแดชบอร์ดด้านบน
         function renderDashboardStats() {
-            // กรองนับเฉพาะโพสต์ใช้งานอยู่
             const activePosts = allPostsData.filter(p => p.status === 'ใช้งาน');
             const totalSuccess = allPostsData.filter(p => p.status === 'สำเร็จ').length;
             const totalPending = activePosts.length;
             
-            // คัดเลือกรายการทั้งหมดแยกตามประเภท
             const totalLost = activePosts.filter(p => p.type === 'ประกาศของหาย').length;
             const totalFound = activePosts.filter(p => p.type === 'ประกาศหาเจ้าของ').length;
 
             document.getElementById('stat-lost-today').innerText = totalLost;
-            document.getElementById('stat-lost-today-change').innerText = `กำลังตามหาอยู่`;
-            
             document.getElementById('stat-found').innerText = totalFound;
-            document.getElementById('stat-found-change').innerText = `รอเจ้าของติดต่อ`;
-            
             document.getElementById('stat-success').innerText = totalSuccess;
+            
             const totalChecked = totalSuccess + totalPending;
             const rate = totalChecked > 0 ? Math.round((totalSuccess / totalChecked) * 100) : 0;
             document.getElementById('stat-success-rate').innerText = `${rate}% Success`;
-            
             document.getElementById('stat-pending').innerText = totalPending;
         }
 
-        // ดึงรายการสถานที่ทั้งหมดแบบไดนามิกไปตั้งค่าในฟิลเตอร์
+        // ประกอบตัวกรองสถานที่แบบไม่ซ้ำยื่นแสดงบนช่อง select
         function populateLocationFilter() {
             const locSelect = document.getElementById('filter-location');
             locSelect.innerHTML = '<option value="">ทุกสถานที่ / สาขา</option>';
             
             const uniqueLocations = [];
             allPostsData.forEach(p => {
-                let mainLoc = p.location.split(' ')[0]; // ดึงเฉพาะคำหลักแรก
+                let mainLoc = p.location.split(' ')[0];
                 if (mainLoc && !uniqueLocations.includes(mainLoc)) {
                     uniqueLocations.push(mainLoc);
                 }
@@ -600,7 +588,6 @@
             });
         }
 
-        // ล้างตัวกรองทั้งหมดกลับไปเป็นค่าว่าง
         function clearAllFilters() {
             document.getElementById('search-input').value = '';
             document.getElementById('filter-type').value = '';
@@ -610,7 +597,7 @@
             applyFilters();
         }
 
-        // ประมวลผลคัดกรองรายการพร้อมค้นหาแบบ Real-time
+        // การประมวลกรองประวัติสืบค้นคีย์เวิร์ด
         function applyFilters() {
             const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
             const typeVal = document.getElementById('filter-type').value;
@@ -634,14 +621,13 @@
                     const matchContact = item.contactName.toLowerCase().includes(searchVal);
                     if (!matchName && !matchLoc && !matchDetails && !matchContact) return false;
                 }
-                
                 return true;
             });
 
             renderFilteredFeeds(filtered);
         }
 
-        // ฟังก์ชันวาด UI แสดงรายการประกาศ
+        // วาดกล่องบอร์ดประกาศแต่ละชิ้น
         function renderFilteredFeeds(items) {
             const feedContainer = document.getElementById('feed-all');
             const noDataState = document.getElementById('no-data-state');
@@ -665,7 +651,7 @@
             });
         }
 
-        // สร้างการ์ดประกาศดีไซน์พรีเมียม
+        // สร้างการ์ดพรีเมียมพอดีสัดส่วน (Responsive Cards)
         function createCardElement(item) {
             const div = document.createElement('div');
             div.className = "bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-md transition duration-300 flex flex-col justify-between";
@@ -675,7 +661,7 @@
             
             const statusTag = isLost 
                 ? `<span class="bg-rose-50 text-rose-500 border border-rose-100 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span> กำลังตามหา</span>`
-                : `<span class="bg-emerald-50 text-emerald-600 border border-emerald-100 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500"></span> ยังไม่เจอเจ้าของ</span>`;
+                : `<span class="bg-emerald-50 text-emerald-600 border border-emerald-100 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500"></span> พบของแล้ว</span>`;
             
             let imagesArr = item.images ? item.images.split(',') : [];
             let imageSectionHTML = '';
@@ -689,15 +675,13 @@
             } else {
                 let svgIcon = '';
                 if (item.category.includes('โทรศัพท์')) {
-                    svgIcon = `<svg class="w-16 h-16 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>`;
+                    svgIcon = `<svg class="w-12 h-12 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>`;
                 } else if (item.category.includes('กระเป๋า')) {
-                    svgIcon = `<svg class="w-16 h-16 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2-.9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>`;
+                    svgIcon = `<svg class="w-12 h-12 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2-.9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>`;
                 } else if (item.category.includes('กุญแจ')) {
-                    svgIcon = `<svg class="w-16 h-16 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>`;
-                } else if (item.category.includes('เอกสาร') || item.category.includes('บัตร')) {
-                    svgIcon = `<svg class="w-16 h-16 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>`;
+                    svgIcon = `<svg class="w-12 h-12 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>`;
                 } else {
-                    svgIcon = `<svg class="w-16 h-16 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z"/></svg>`;
+                    svgIcon = `<svg class="w-12 h-12 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z"/></svg>`;
                 }
 
                 imageSectionHTML = `
@@ -712,36 +696,33 @@
                 ? rawDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
                 : item.eventDate;
 
-           let actionBtnRightHTML = '';
-
             div.innerHTML = `
                 <div>
                     ${imageSectionHTML}
-                    <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center justify-between mb-1.5">
                         <span class="text-xs font-semibold text-slate-400 block">${item.category}</span>
                     </div>
-                    <h3 class="text-lg md:text-xl font-bold text-slate-900 leading-snug mb-3 cursor-pointer hover:text-blue-600 transition" onclick="openDetailModalWithId(${item.id})">${item.itemName}</h3>
+                    <h3 class="text-base md:text-lg font-bold text-slate-900 leading-snug mb-3 cursor-pointer hover:text-blue-600 transition" onclick="openDetailModalWithId(${item.id})">${item.itemName}</h3>
                     
-                    <div class="space-y-2 text-slate-600 text-[13.5px] border-t border-b border-slate-100/75 py-3 mb-4">
-                        <p class="flex items-center gap-2"><i class="fa-solid fa-map-pin text-rose-500 w-4"></i> <strong class="text-slate-700">${isLost ? 'สถานที่หาย' : 'สถานที่พบ'}:</strong> ${item.location}</p>
-                        <p class="flex items-center gap-2"><i class="fa-regular fa-calendar-days text-slate-400 w-4"></i> <strong class="text-slate-700">วันที่:</strong> ${dateStr}</p>
-                        <p class="flex items-center gap-2"><i class="fa-solid fa-user text-slate-400 w-4"></i> <strong class="text-slate-700">ผู้แจ้ง:</strong> ${item.contactName}</p>
+                    <div class="space-y-1.5 text-slate-600 text-xs md:text-sm border-t border-b border-slate-100/75 py-2.5 mb-3.5">
+                        <p class="flex items-center gap-1.5"><i class="fa-solid fa-map-pin text-rose-500 w-4"></i> <strong class="text-slate-700">${isLost ? 'สถานที่หาย' : 'สถานที่พบ'}:</strong> ${item.location}</p>
+                        <p class="flex items-center gap-1.5"><i class="fa-regular fa-calendar-days text-slate-400 w-4"></i> <strong class="text-slate-700">วันที่:</strong> ${dateStr}</p>
+                        <p class="flex items-center gap-1.5"><i class="fa-solid fa-user text-slate-400 w-4"></i> <strong class="text-slate-700">ผู้แจ้ง:</strong> ${item.contactName}</p>
                     </div>
                 </div>
 
                 <div>
-                    <div class="mb-4">
+                    <div class="mb-3">
                         ${statusTag}
                     </div>
 
                     <div class="flex gap-2">
-                        <button onclick="openDetailModalWithId(${item.id})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-1.5 text-sm shadow-md shadow-blue-500/10">
+                        <button onclick="openDetailModalWithId(${item.id})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold transition text-xs md:text-sm shadow-sm">
                             รายละเอียด
                         </button>
-                        ${actionBtnRightHTML}
                     </div>
 
-                    <div class="flex justify-between items-center text-xs text-slate-400 mt-4 pt-3 border-t border-slate-100">
+                    <div class="flex justify-between items-center text-[10px] md:text-xs text-slate-400 mt-4 pt-2.5 border-t border-slate-100">
                         <span><i class="fa-solid fa-eye mr-0.5"></i> ล่าสุด</span>
                         <button onclick="shareLink(${item.id})" class="hover:text-blue-600 font-medium transition flex items-center gap-1">
                             <i class="fa-solid fa-share-nodes"></i> แชร์ประกาศ
@@ -752,26 +733,25 @@
             return div;
         }
 
-        // ค้นหาวัตถุเพื่อเปิด Modal ด้วยไอดีหลัก
         function openDetailModalWithId(id) {
             const item = allPostsData.find(p => p.id == id);
             if (item) openDetailModal(item);
         }
 
-        // เปิดหน้าจอรายละเอียดสินค้าตัวเต็ม
+        // เรนเดอร์ป๊อปอัพพรีวิวแบบการ์ดขนาดใหญ่
         function openDetailModal(item) {
             const isLost = item.type === 'ประกาศของหาย';
             
             const typeBadge = document.getElementById('modal-type-badge');
             if (isLost) {
-                typeBadge.className = "bg-rose-50 text-rose-500 border border-rose-100 px-3 py-1 rounded-full text-xs font-bold";
+                typeBadge.className = "bg-rose-50 text-rose-500 border border-rose-100 px-2.5 py-1 rounded-full text-xs font-bold";
                 typeBadge.innerText = "🚨 ประกาศของหาย";
             } else {
-                typeBadge.className = "bg-emerald-50 text-emerald-600 border border-emerald-100 px-3 py-1 rounded-full text-xs font-bold";
+                typeBadge.className = "bg-emerald-50 text-emerald-600 border border-emerald-100 px-2.5 py-1 rounded-full text-xs font-bold";
                 typeBadge.innerText = "💡 ประกาศหาเจ้าของ";
             }
 
-            document.getElementById('modal-category-badge').className = "bg-blue-50 text-blue-600 border border-blue-100 px-3 py-1 rounded-full text-xs font-semibold";
+            document.getElementById('modal-category-badge').className = "bg-blue-50 text-blue-600 border border-blue-100 px-2.5 py-1 rounded-full text-xs font-semibold";
             document.getElementById('modal-category-badge').innerText = item.category;
 
             document.getElementById('modal-title').innerText = item.itemName;
@@ -786,7 +766,7 @@
             document.getElementById('modal-location').innerText = item.location;
             document.getElementById('modal-contact').innerText = item.contactName;
             document.getElementById('modal-timestamp').innerText = item.timestamp;
-            document.getElementById('modal-details').innerText = item.details || 'ไม่มีข้อมูลบันทึกรายละเอียดลักษณะพิเศษเพิ่มเติม';
+            document.getElementById('modal-details').innerText = item.details || 'ไม่มีข้อมูลรายละเอียดเอกลักษณ์พิเศษเพิ่มเติมในคลังคลาวด์';
 
             document.getElementById('modal-phone-btn').href = `tel:${item.phone}`;
             document.getElementById('modal-phone-text').innerText = item.phone;
@@ -828,7 +808,7 @@
                     imagesArr.forEach((imgUrl, index) => {
                         const thumb = document.createElement('img');
                         thumb.src = imgUrl;
-                        thumb.className = `w-14 h-14 object-cover rounded-xl border-2 cursor-pointer transition ${index === 0 ? 'border-blue-600' : 'border-transparent hover:border-slate-300'}`;
+                        thumb.className = `w-12 h-12 object-cover rounded-xl border-2 cursor-pointer transition ${index === 0 ? 'border-blue-600' : 'border-transparent hover:border-slate-300'}`;
                         thumb.onclick = function() {
                             document.getElementById('modal-main-image').src = imgUrl;
                             document.querySelectorAll('#modal-thumbnails img').forEach(t => t.classList.replace('border-blue-600', 'border-transparent'));
@@ -838,116 +818,31 @@
                     });
                 }
             } else {
-                let categoryIconSvg = '';
-                if (item.category.includes('โทรศัพท์')) {
-                    categoryIconSvg = `<svg class="w-24 h-24 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>`;
-                } else if (item.category.includes('กระเป๋า')) {
-                    categoryIconSvg = `<svg class="w-24 h-24 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2-.9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>`;
-                } else if (item.category.includes('กุญแจ')) {
-                    categoryIconSvg = `<svg class="w-24 h-24 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>`;
-                } else {
-                    categoryIconSvg = `<svg class="w-24 h-24 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z"/></svg>`;
-                }
-                imageContainer.innerHTML = `<div class="text-center">${categoryIconSvg}<p class="text-xs text-slate-400 mt-2">ไม่มีการอัปโหลดรูปภาพไว้ในสารบบ</p></div>`;
+                let categoryIconSvg = `<svg class="w-20 h-20 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z"/></svg>`;
+                imageContainer.innerHTML = `<div class="text-center">${categoryIconSvg}<p class="text-[10px] text-slate-400 mt-2">ไม่มีการอัปโหลดรูปภาพไว้ในสารบบ</p></div>`;
             }
 
             const statusPill = document.getElementById('modal-status-pill');
             statusPill.className = "px-3.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200";
-            statusPill.innerHTML = `<i class="fa-regular fa-clock mr-1"></i> 📢 หากพบสิ่งของสูญหายหรือสิ่งของตกหล่น กรุณาแจ้ง HRD เพื่อช่วยติดตามและประสานงานกับเจ้าของ`;
+            statusPill.innerHTML = `<i class="fa-regular fa-clock mr-1"></i> มีผลโชว์ที่บอร์ดหลัก`;
 
-           const actionBtnBox = document.getElementById('modal-action-buttons');
-actionBtnBox.innerHTML = ``; // ลบโค้ดปุ่มข้างในออกให้หมด เหลือแค่โครงเปล่า ๆ แบบนี้พอครับ
+            // ดึงปุ่มปิดเคสสำหรับการพรีวิวรายละเอียดทั่วไป
+            const actionBtnBox = document.getElementById('modal-action-buttons');
+            actionBtnBox.innerHTML = `
+                <button onclick="closeDetailModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-xs md:text-sm transition">
+                    ปิดหน้าจอนี้
+                </button>
+            `;
 
             document.getElementById('detail-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
 
-        // ปิดหน้าจอรายละเอียดสินค้า
         function closeDetailModal() {
             document.getElementById('detail-modal').classList.add('hidden');
             document.body.style.overflow = '';
         }
 
-        // ระบบอัปเดตสถานะเป็น "สำเร็จ" (เปลี่ยนแล้วหายไปจากหน้าจอทันทีด้วยแอนิเมชัน)
-        function changeStatusAndDisappear(id, newStatus) {
-            closeDetailModal();
-
-            const item = allPostsData.find(p => p.id == id);
-            if (!item) return;
-
-            const isLost = item.type === 'ประกาศของหาย';
-            const confirmTitle = isLost ? 'ยืนยันพบบันทึกของสูญหายแล้ว?' : 'ยืนยันการเคลมส่งมอบคืนแก่เจ้าของ?';
-            const confirmText = isLost 
-                ? 'หลังจากปรับสถานะเป็น "สำเร็จ" ประกาศของสูญหายชิ้นนี้จะถูกปิดตัวและกรองออกจากการ์ดหน้าหลักทันที' 
-                : 'ข้อมูลจะถูกอัปเดตลงฐานข้อมูล Supabase เป็นจัดคืนสำเร็จ และประวัติโพสต์หลักจะหายไปทันที';
-
-            Swal.fire({
-                title: confirmTitle,
-                text: confirmText,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#10b981',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'ใช่, ดำเนินการเสร็จสิ้น!',
-                cancelButtonText: 'ยกเลิก'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    showLoadingAlert('กำลังปรับปรุงโครงสร้างสถานะไฟล์ข้อมูล...');
-                    
-                    fetch(`${WORKER_API_URL}/api/posts/update-status`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ id: id })
-                    })
-                    .then(res => res.json())
-                    .then(response => {
-                        if (response.status === 'success') {
-                            handleLocalStatusRemoval(id);
-                        } else {
-                            Swal.fire('พบข้อผิดพลาด!', response.message, 'error');
-                        }
-                    })
-                    .catch(error => {
-                        Swal.fire('ล้มเหลว!', error.toString(), 'error');
-                    });
-                }
-            });
-        }
-
-        // ประมวลผลลบการ์ดดังกล่าวออกไปจากชุดอาร์เรย์ในระบบความจำหน้าเว็บแบบสดๆ
-        function handleLocalStatusRemoval(id) {
-            const cardEl = document.getElementById(`post-card-${id}`);
-            
-            const idx = allPostsData.findIndex(p => p.id == id);
-            if (idx !== -1) {
-                allPostsData[idx].status = 'สำเร็จ';
-            }
-
-            if (cardEl) {
-                cardEl.style.transition = 'all 0.4s ease';
-                cardEl.style.opacity = '0';
-                cardEl.style.transform = 'scale(0.9)';
-                
-                setTimeout(() => {
-                    renderDashboardStats();
-                    applyFilters();
-                    
-                    Swal.fire({
-                        title: 'ปรับปรุงสถานะเรียบร้อย!',
-                        text: 'ประกาศถูกอัปเดตสถานะสำเร็จและลบออกจากระบบประวัติหลักแล้ว',
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                }, 400);
-            } else {
-                renderDashboardStats();
-                applyFilters();
-                Swal.fire('ปรับปรุงสำเร็จ!', 'การอัปเดตสมบูรณ์แบบ', 'success');
-            }
-        }
-
-        // คัดลอกลิงก์เพื่อส่งต่อหรือแชร์ (Deep Link Sharing System)
         function shareLink(id) {
             const baseUrl = window.location.href.split('?')[0];
             const shareUrl = `${baseUrl}?id=${id}`;
@@ -955,11 +850,11 @@ actionBtnBox.innerHTML = ``; // ลบโค้ดปุ่มข้างใน
             copyTextToClipboard(shareUrl);
 
             Swal.fire({
-                title: 'คัดลอกลิงก์สำเร็จแล้ว!',
-                text: 'สามารถส่งต่อลิงก์นี้ใน LINE หรือ Facebook เพื่อเปิดโพสต์ชิ้นนี้ได้ทันที',
+                title: 'คัดลอกลิงก์สำเร็จ!',
+                text: 'สามารถส่งต่อลิงก์นี้ในแชทให้ผู้อื่นเปิดดูบอร์ดการ์ดนี้ได้ทันที',
                 icon: 'success',
                 confirmButtonColor: '#3b82f6',
-                confirmButtonText: 'ตกลง'
+                confirmButtonText: 'รับทราบ'
             });
         }
 
@@ -978,7 +873,7 @@ actionBtnBox.innerHTML = ``; // ลบโค้ดปุ่มข้างใน
             document.body.removeChild(textArea);
         }
 
-        // เปิดกล่อง Modal กรอกข้อมูล
+        // จัดท่าทางสีสันเปิดป๊อปอัพแจ้งแบบฟอร์ม
         function openFormModal(type) {
             const isLost = type === 'lost';
             document.getElementById('form-type-input').value = isLost ? 'ประกาศของหาย' : 'ประกาศหาเจ้าของ';
@@ -992,15 +887,15 @@ actionBtnBox.innerHTML = ``; // ลบโค้ดปุ่มข้างใน
             document.getElementById('form-loc-label-el').innerText = isLost ? 'สถานที่สันนิษฐานว่าทำตกหล่น *' : 'สถานที่พบบริเวณที่ของตั้งอยู่ *';
 
             if (isLost) {
-                headerBar.className = "px-6 py-4 border-b border-rose-100 flex justify-between items-center bg-rose-50/50";
+                headerBar.className = "px-5 py-4 border-b border-rose-100 flex justify-between items-center bg-rose-50/50";
                 iconEl.innerText = "📕";
-                titleEl.innerText = "กรอกฟอร์มแจ้งประกาศของหาย (Lost)";
-                submitBtn.className = "px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-sm shadow-md transition";
+                titleEl.innerText = "แจ้งประกาศของหาย (Lost)";
+                submitBtn.className = "px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-xs md:text-sm transition";
             } else {
-                headerBar.className = "px-6 py-4 border-b border-emerald-100 flex justify-between items-center bg-emerald-50/50";
+                headerBar.className = "px-5 py-4 border-b border-emerald-100 flex justify-between items-center bg-emerald-50/50";
                 iconEl.innerText = "💡";
-                titleEl.innerText = "กรอกฟอร์มแจ้งเก็บของได้ (Found)";
-                submitBtn.className = "px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-md transition";
+                titleEl.innerText = "แจ้งเก็บของได้ (Found)";
+                submitBtn.className = "px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs md:text-sm transition";
             }
 
             uploadedImagesBase64 = [];
@@ -1011,20 +906,19 @@ actionBtnBox.innerHTML = ``; // ลบโค้ดปุ่มข้างใน
             document.body.style.overflow = 'hidden';
         }
 
-        // ปิดแบบฟอร์มกรอกข้อมูล
         function closeFormModal() {
             document.getElementById('form-modal').classList.add('hidden');
             document.body.style.overflow = '';
         }
 
-        // ส่วนของการอ่านและแปลงรูปเพื่อเตรียมพร้อมอัปโหลด (Base64)
+        // ประสิทธิรหัสแปลงไฟล์รูปเป็น Base64
         async function previewImages(input) {
             const previewContainer = document.getElementById('form-preview');
             previewContainer.innerHTML = '';
             uploadedImagesBase64 = [];
 
             if (input.files.length > 5) {
-                Swal.fire('ไฟล์เยอะเกินขีดจำกัด!', 'คุณสามารถอัปโหลดได้สูงสุด 5 รูปต่อการแจ้งครั้ง', 'error');
+                Swal.fire('เกินขีดจำกัดไฟล์!', 'คุณสามารถอัปโหลดได้สูงสุดไม่เกิน 5 ภาพครับ', 'error');
                 input.value = '';
                 return;
             }
@@ -1035,10 +929,9 @@ actionBtnBox.innerHTML = ``; // ลบโค้ดปุ่มข้างใน
                 let reader = new FileReader();
                 reader.onload = function(e) {
                     const wrap = document.createElement('div');
-                    wrap.className = "relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 shadow-sm";
+                    wrap.className = "relative w-14 h-14 rounded-xl overflow-hidden border border-slate-200 shadow-sm";
                     wrap.innerHTML = `
                         <img src="${e.target.result}" class="w-full h-full object-cover">
-                        <span class="absolute top-0.5 right-0.5 bg-slate-900/60 text-white text-[9px] px-1 rounded-md font-mono">${(file.size / 1024 / 1024).toFixed(1)}M</span>
                     `;
                     previewContainer.appendChild(wrap);
                 }
@@ -1063,7 +956,7 @@ actionBtnBox.innerHTML = ``; // ลบโค้ดปุ่มข้างใน
         function showLoadingAlert(msg) {
             Swal.fire({
                 title: msg,
-                html: 'ระบบกำลังส่งมอบข้อมูลเข้าเซิร์ฟเวอร์คลาวด์ โปรดอย่าปิดหน้านี้',
+                html: 'ระบบกำลังจัดส่งเอกสารของคุณเข้าระบบคลาวด์ โปรดอย่าเพิ่งปิดหน้าต่างหลักนะครับ',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
@@ -1071,7 +964,7 @@ actionBtnBox.innerHTML = ``; // ลบโค้ดปุ่มข้างใน
             });
         }
 
-        // ส่งข้อมูลแบบฟอร์มบันทึกเข้าระบบ
+        // ยื่นฟอร์มส่งข้อมูลด่วนเข้า Workers และ Storage Supabase
         function submitData(event) {
             event.preventDefault();
 
@@ -1101,16 +994,16 @@ actionBtnBox.innerHTML = ``; // ลบโค้ดปุ่มข้างใน
             .then(response => {
                 if (response.status === 'success') {
                     Swal.fire({
-                        title: 'ส่งฟอร์มสำเร็จ!',
-                        text: 'คุณได้ทำการลงประกาศบน Supabase เรียบร้อยแล้ว',
+                        title: 'แจ้งเรียบร้อย!',
+                        text: 'ประกาศได้รับการบันทึกลงสู่เซิร์ฟเวอร์เรียบร้อยแล้ว',
                         icon: 'success',
                         confirmButtonColor: '#3b82f6',
                     }).then(() => {
                         closeFormModal();
-                        fetchPosts(); // โหลดข้อมูลสดใหม่ทันที
+                        fetchPosts();
                     });
                 } else {
-                    Swal.fire('ข้อผิดพลาดเซิร์ฟเวอร์!', response.message, 'error');
+                    Swal.fire('เซิร์ฟเวอร์ขัดข้อง!', response.message, 'error');
                 }
             })
             .catch(error => {
